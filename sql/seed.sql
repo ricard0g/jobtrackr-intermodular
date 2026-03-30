@@ -29,7 +29,6 @@ VALUES
 
 
 -- Etiquetas con colores para etiquetar postulaciones
-
 INSERT INTO etiquetas
     (nombre_etiqueta, color_etiqueta)
 VALUES
@@ -58,7 +57,7 @@ VALUES
     ("Gran Empresa", "#64748B");
 
 
--- Postulaciones
+-- Postulaciones (12 en total)
 INSERT INTO postulaciones
     (usuario_id, empresa_id, rol, estatus, orden_kanban, salario_minimo, salario_maximo, ubicacion, es_telematico, oferta_url, nota_postulacion, fecha_postulacion)
 VALUES
@@ -67,28 +66,36 @@ VALUES
     (1, 10, 'Becario Desarrollador Web', 'POSTULADA', 0, 12000.00, 14000.00, 'Madrid, España', FALSE, 'https://www.indracompany.com/es/empleo/becas/desarrollador-web', 'Beca de 6 meses con posible incorporación. Perfil orientado a desarrollo web con HTML, CSS y JavaScript.', '2026-03-10'),
     (1, 11, 'Junior Software Developer', 'OFERTA', 0, 22000.00, 27000.00, 'Madrid, España', TRUE, 'https://es.nttdata.com/careers/junior-software-developer', 'Oferta formal recibida por correo. Revisar contrato antes del 5 de abril. Salario algo por debajo de lo esperado pero con revisión a los 6 meses, hay que estar pendiente.', '2026-02-20'),
     (1, 2, 'Prácticas Desarrollo Web', 'DESCARTADA', 0, 10000.00, 12000.00, 'Madrid, España', FALSE, 'https://www.telefonica.com/es/empleo/practicas/desarrollo-web', 'Descartado en la fase de revisión de CV. El perfil probablemente necesita más proyectos prácticos (enfocados en web al 100%) en el portfolio.', '2026-02-15'),
-    (1, 7, 'Junior Backend Developer', 'REVISION', 1, 21000.00, 26000.00, 'Madrid, España', TRUE, 'https://www.bbva.com/es/empleo/junior-backend-developer', 'Gran empresa del sector financiero. Proceso largo pero buenas condiciones. Esperando respuesta al test técnico enviado la semana pasada.', '2026-03-08');
+    (1, 7, 'Junior Backend Developer', 'REVISION', 1, 21000.00, 26000.00, 'Madrid, España', TRUE, 'https://www.bbva.com/es/empleo/junior-backend-developer', 'Gran empresa del sector financiero. Proceso largo pero buenas condiciones. Esperando respuesta al test técnico enviado la semana pasada.', '2026-03-08'),
+    (1, 8, 'Desarrollador Backend Java', 'POSTULADA', 1, 19000.00, 24000.00, 'Madrid, España', TRUE, 'https://www.accenture.com/es-es/careers/jobdetails?id=backend-java-002', 'Segunda posición que abre Accenture en el equipo de backend. Perfil más enfocado en microservicios y APIs REST. Mandé CV el mismo día que salió la oferta.', '2026-03-20'),
+    (1, 9, 'Analista Programador Junior', 'DESCARTADA', 1, 18000.00, 22000.00, 'Valencia, España', FALSE, 'https://www.capgemini.com/es-es/careers/job-listings/analista-programador/', 'Rechazado tras el primer filtro de RRHH. Comentaron que buscaban perfil con más experiencia en entornos empresariales. Posición con mucha demanda interna.', '2026-03-05'),
+    (1, 12, 'STEP Intern (Software Engineering)', 'REVISION', 0, 30000.00, 38000.00, 'Múnich, Alemania', TRUE, 'https://careers.google.com/jobs/results/step-intern-2026', 'Proceso muy largo y competitivo. Completé el formulario y el test de razonamiento. Totalmente en inglés. Poca esperanza pero merece intentarlo por la experiencia.', '2026-03-15'),
+    (1, 7, 'Desarrollador Web Frontend', 'ENTREVISTA', 2, 20000.00, 25000.00, 'Bilbao, España', TRUE, 'https://www.bbva.com/es/empleo/desarrollador-web-frontend', 'Segunda posición en BBVA, esta vez más orientada a frontend. Pasé el filtro técnico con React/JS y me citaron para entrevista con el equipo. Muy bien ritmo del proceso.', '2026-03-12'),
+    (1, 13, 'Junior Software Engineer', 'RETIRADA', 0, 28000.00, 35000.00, 'Dublín, Irlanda', TRUE, 'https://careers.microsoft.com/students/us/en/job/junior-se-emea', 'Me retiré voluntariamente porque implicaba reubicación a Irlanda y no es viable ahora mismo. El proceso iba bien, superé la primera ronda técnica.', '2026-02-28'),
+    (1, 14, 'Backend Developer Intern', 'POSTULADA', 2, 24000.00, 30000.00, 'Barcelona, España', TRUE, 'https://www.lifeatspotify.com/jobs/backend-developer-intern-barcelona', 'Oferta muy atractiva en una empresa de producto real. Stack moderno (Python, Kafka, GCP). Acabo de enviar el CV y carta de motivación. Dedos cruzados.', '2026-03-25');
 
 
 -- Entrevistas
 INSERT INTO entrevistas
     (postulacion_id, numero_ronda, tipo_entrevista, fecha_entrevista, entrevistador, resultado_entrevista)
 VALUES
-    -- Primera Postulcion con Accenture
-    (1, 1, 'RRHH', '2026-03-15 10:00:00', 'Ana López (Chica de Talent Acquisition)', 'SUPERADA'),
+    (1, 1, 'RRHH', '2026-03-15 10:00:00', 'Ana López (Talent Acquisition)', 'SUPERADA'),
     (1, 2, 'TECNICA', '2026-03-25 11:00:00', 'Pedro Martínez (Tech Lead)', 'PENDIENTE'),
 
-    -- Cuarta Postulacion con NTT Data
     (4, 1, 'TELEFONICA', '2026-03-01 09:00:00', 'María García (RRHH)', 'SUPERADA'),
     (4, 2, 'TECNICA', '2026-03-10 10:30:00', 'Roberto Sánchez (Senior Developer)', 'SUPERADA'),
-    (4, 3, 'FINAL', '2026-03-18 12:00:00', 'Lucía Fernández (Engineering Manager)', 'SUPERADA');
+    (4, 3, 'FINAL', '2026-03-18 12:00:00', 'Lucía Fernández (Engineering Manager)', 'SUPERADA'),
+
+    (10, 1, 'TELEFONICA', '2026-03-22 09:30:00', 'Carmen Ruiz (RRHH)', 'SUPERADA'),
+    (10, 2, 'TECNICA', '2026-03-28 11:00:00', 'Javier Moreno (Frontend Lead)', 'PENDIENTE'),
+
+    (11, 1, 'RRHH', '2026-03-05 16:00:00', 'Sophie Miller (Recruiter)', 'SUPERADA');
 
 
 -- Postulaciones_Etiquetas
 INSERT INTO postulaciones_etiquetas
     (postulacion_id, etiqueta_id)
 VALUES
-    -- Postulacion de Accentura
     (1, 1),
     (1, 4),
     (1, 5),
@@ -98,7 +105,6 @@ VALUES
     (1, 21),
     (1, 23),
 
-    -- Postulacion de Capgemini
     (2, 1),
     (2, 2),
     (2, 4),
@@ -108,7 +114,6 @@ VALUES
     (2, 19),
     (2, 23),
 
-    -- Postulacion de Indra
     (3, 2),
     (3, 4),
     (3, 9),
@@ -117,7 +122,6 @@ VALUES
     (3, 21),
     (3, 23),
 
-    -- Postulacion de NTT Data
     (4, 1),
     (4, 4),
     (4, 5),
@@ -127,7 +131,6 @@ VALUES
     (4, 19),
     (4, 23),
 
-    -- Postulacion de telefonica
     (5, 2),
     (5, 4),
     (5, 9),
@@ -135,7 +138,6 @@ VALUES
     (5, 21),
     (5, 23),
 
-    -- Postulacion de BBVA
     (6, 1),
     (6, 4),
     (6, 5),
@@ -143,11 +145,60 @@ VALUES
     (6, 9),
     (6, 15),
     (6, 19),
-    (6, 23);
+    (6, 23),
+
+    (7, 1),
+    (7, 4),
+    (7, 5),
+    (7, 8),
+    (7, 9),
+    (7, 15),
+    (7, 19),
+    (7, 23),
+
+    (8, 1),
+    (8, 2),
+    (8, 4),
+    (8, 9),
+    (8, 15),
+    (8, 21),
+    (8, 23),
+
+    (9, 3),
+    (9, 9),
+    (9, 12),
+    (9, 13),
+    (9, 15),
+    (9, 19),
+    (9, 23),
+
+    (10, 2),
+    (10, 9),
+    (10, 10),
+    (10, 15),
+    (10, 20),
+    (10, 23),
+
+    (11, 1),
+    (11, 2),
+    (11, 8),
+    (11, 9),
+    (11, 12),
+    (11, 15),
+    (11, 19),
+    (11, 23),
+
+    (12, 3),
+    (12, 4),
+    (12, 8),
+    (12, 9),
+    (12, 11),
+    (12, 15),
+    (12, 19),
+    (12, 22);
 
 
-
--- Historial Estatus    
+-- Historial Estatus
 INSERT INTO historial_estatus
     (postulacion_id, antiguo_estatus, nuevo_estatus, nota_estatus)
 VALUES
@@ -169,4 +220,23 @@ VALUES
     (5, 'POSTULADA', 'DESCARTADA', 'Correo de rechazo recibido. El portfolio necesita más proyectos enfocados en desarrollo web.'),
 
     (6, NULL, 'POSTULADA', 'Candidatura enviada a través de InfoJobs.'),
-    (6, 'POSTULADA', 'REVISION', 'Test técnico recibido por correo, completado y devuelto el mismo día. Esperando respuesta.');
+    (6, 'POSTULADA', 'REVISION', 'Test técnico recibido por correo, completado y devuelto el mismo día. Esperando respuesta.'),
+
+    (7, NULL, 'POSTULADA', 'CV enviado directamente a través del portal de carreras de Accenture. Respuesta automática de confirmación recibida.'),
+
+    (8, NULL, 'POSTULADA', 'Candidatura enviada vía LinkedIn Easy Apply.'),
+    (8, 'POSTULADA', 'DESCARTADA', 'Correo de rechazo automático recibido a los 3 días. Sin feedback específico del motivo.'),
+
+    (9, NULL, 'POSTULADA', 'Formulario de aplicación completado en el portal de Google Careers. Proceso 100% en inglés.'),
+    (9, 'POSTULADA', 'REVISION', 'Email de confirmación indicando que el perfil está siendo evaluado por el equipo de recruiting.'),
+
+    (10, NULL, 'POSTULADA', 'Candidatura enviada a través del portal de empleo de BBVA.'),
+    (10, 'POSTULADA', 'REVISION', 'Contacto de RRHH confirmando revisión del CV e invitación a completar test de aptitudes online.'),
+    (10, 'REVISION', 'ENTREVISTA', 'Test superado. Invitación a entrevista telefónica con RRHH para la semana siguiente.'),
+
+    (11, NULL, 'POSTULADA', 'Candidatura enviada a través del portal de Microsoft Careers. Posición en Dublín.'),
+    (11, 'POSTULADA', 'REVISION', 'Recruiter contactó por LinkedIn para validar disponibilidad de reubicación.'),
+    (11, 'REVISION', 'ENTREVISTA', 'Primera entrevista RRHH realizada y superada. Requería confirmación de disponibilidad para moverse a Irlanda.'),
+    (11, 'ENTREVISTA', 'RETIRADA', 'Me retiré voluntariamente al confirmar que la reubicación a Dublín no es viable en este momento.'),
+
+    (12, NULL, 'POSTULADA', 'CV y carta de motivación enviados a través del portal Life at Spotify. Posición muy competida.');
