@@ -1,7 +1,7 @@
 package org.ricardo.jobtrackr.config;
 
 import com.sun.net.httpserver.HttpServer;
-import org.ricardo.jobtrackr.routes.HelloWorldHandler;
+import org.ricardo.jobtrackr.controller.UserController;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -22,6 +22,6 @@ public class ServerConfig {
     }
 
     private static void registerRoutes(HttpServer server) {
-        server.createContext("/hello", new HelloWorldHandler());
+        server.createContext("/api/usuario", new UserController());
     }
 }

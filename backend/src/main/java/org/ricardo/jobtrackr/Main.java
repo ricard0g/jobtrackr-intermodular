@@ -4,18 +4,13 @@ import org.ricardo.jobtrackr.config.DatabaseConfig;
 import org.ricardo.jobtrackr.config.ServerConfig;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.sql.*;
 
 public class Main {
     static void main() throws IOException {
         DatabaseConfig.setupDataSource();
         ServerConfig.start();
 
-        try (Connection conn = DatabaseConfig.getConnection()) {
-            System.out.println(conn.isValid(2));
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
+        Runtime.getRuntime().addShutdownHook(new Thread(DatabaseConfig::shutdownConnections)); // Añadir un hook (un thread) al Runtime para cerrar todas las
+        // conexiones con la piscina de conexiones
     }
 }
