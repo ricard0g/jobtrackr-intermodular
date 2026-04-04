@@ -1,6 +1,7 @@
 package org.ricardo.jobtrackr.config;
 
 import com.sun.net.httpserver.HttpServer;
+import org.ricardo.jobtrackr.controller.EnterpriseController;
 import org.ricardo.jobtrackr.controller.UserController;
 
 import java.io.IOException;
@@ -23,5 +24,6 @@ public class ServerConfig {
 
     private static void registerRoutes(HttpServer server) {
         server.createContext("/api/usuario", new UserController());
+        server.createContext("/api/empresas", new EnterpriseController());
     }
 }

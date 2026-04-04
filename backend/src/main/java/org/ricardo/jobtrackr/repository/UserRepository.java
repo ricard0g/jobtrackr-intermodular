@@ -6,13 +6,13 @@ import org.ricardo.jobtrackr.model.User;
 import java.sql.*;
 import java.util.Optional;
 
-public class UserRepository {
+public class UserRepository extends RowMapper<User> {
 
     public Optional<User> getUser() throws SQLException {
-        String sql = "select usuario_id, primer_nombre_usuario, segundo_nombre_usuario, primer_apellido_usuario, segundo_apellido_usuario, " +
+        String sql = "SELECT usuario_id, primer_nombre_usuario, segundo_nombre_usuario, primer_apellido_usuario, segundo_apellido_usuario, " +
                 "correo_electronico_usuario" +
-                " from " +
-                "usuarios where " +
+                " FROM " +
+                "usuarios WHERE " +
                 "usuario_id = 1"; // usuario_id hardcodeado porque solo hay un usuario ficticio
         try (Connection conn = DatabaseConfig.getConnection(); Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery(sql);
@@ -25,7 +25,7 @@ public class UserRepository {
         }
     }
 
-    private User mapRow(ResultSet rs) throws SQLException {
+    protected User mapRow(ResultSet rs) throws SQLException {
         User user = new User();
         user.setUsuarioId(rs.getInt("usuario_id"));
         user.setPrimerNombreUsuario(rs.getString("primer_nombre_usuario"));

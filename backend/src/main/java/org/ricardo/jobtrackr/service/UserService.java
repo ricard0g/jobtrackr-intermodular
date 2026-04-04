@@ -1,6 +1,6 @@
 package org.ricardo.jobtrackr.service;
 
-import org.ricardo.jobtrackr.exceptions.UserNotFoundException;
+import org.ricardo.jobtrackr.exceptions.user.UserNotFoundException;
 import org.ricardo.jobtrackr.model.User;
 import org.ricardo.jobtrackr.repository.UserRepository;
 

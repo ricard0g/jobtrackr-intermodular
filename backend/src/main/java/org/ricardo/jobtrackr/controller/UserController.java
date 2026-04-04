@@ -4,7 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.ricardo.jobtrackr.controller.base.ControllerBase;
 import org.ricardo.jobtrackr.dto.UserResponse;
-import org.ricardo.jobtrackr.exceptions.UserNotFoundException;
+import org.ricardo.jobtrackr.exceptions.NotFoundException;
 import org.ricardo.jobtrackr.model.User;
 import org.ricardo.jobtrackr.service.UserService;
 import org.ricardo.jobtrackr.util.JsonUtil;
@@ -36,17 +36,17 @@ public class UserController extends ControllerBase implements HttpHandler {
             System.out.println("User's Email -> " + userResponse.correoElectronicoUsuario());
 
             sendResponse(exchange, 200, JsonUtil.toJson(userResponse));
-        } catch (UserNotFoundException e) {
+        } catch (NotFoundException e) {
             e.printStackTrace();
             System.out.println("Runtime Error. Error: " + e.getMessage());
-            sendResponse(exchange, UserNotFoundException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
+            sendResponse(exchange, NotFoundException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
         } catch (SQLException e) {
             e.printStackTrace();
             System.out.println("Error during SQL Retrieval. Error: " + e.getMessage());
             sendResponse(exchange, 500, "{\"error\":\"Error durante el acceso a Base de Datos en el servidor.\"}");
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Error during SQL Retrieval. Error: " + e.getMessage());
+            System.out.println("Unhandled error. Error: " + e.getMessage());
             sendResponse(exchange, 500, "{\"error\":\"Error del servidor, intentalo mas tarde.\"}");
         }
     }
