@@ -1,12 +1,10 @@
 package org.ricardo.jobtrackr.repository;
 
+import com.mysql.cj.x.protobuf.MysqlxPrepare;
 import org.ricardo.jobtrackr.config.DatabaseConfig;
 import org.ricardo.jobtrackr.model.Enterprise;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +26,23 @@ public class EnterpriseRepository extends RowMapper<Enterprise> {
             }
 
             return Optional.of(enterprises);
+        }
+    }
+
+    public int createEnterprise(Enterprise enterprise) throws SQLException {
+        String sql = "INSERT INTO empresas (nombre_empresa, logo_empresa) VALUES (?, ?)";
+
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, enterprise.getNombreEmpresa());
+            stmt.setString(2, enterprise.getLogoEmpresa());
+
+            int newEnterpriseId = stmt.executeUpdate();
+
+            System.out.println("👍 New Enterprise Created:");
+            System.out.println("- Nombre Empresa: " + enterprise.getNombreEmpresa());
+            System.out.println("- Logo Empresa: " + enterprise.getLogoEmpresa());
+
+            return newEnterpriseId;
         }
     }
 

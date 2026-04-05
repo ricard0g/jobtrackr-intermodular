@@ -1,6 +1,6 @@
 package org.ricardo.jobtrackr.service;
 
-import org.ricardo.jobtrackr.exceptions.user.UserNotFoundException;
+import org.ricardo.jobtrackr.exceptions.NotFoundException;
 import org.ricardo.jobtrackr.model.User;
 import org.ricardo.jobtrackr.repository.UserRepository;
 
@@ -10,6 +10,6 @@ public class UserService {
     private final UserRepository userRepository = new UserRepository();
 
     public User getUser() throws SQLException {
-        return userRepository.getUser().orElseThrow(() -> new UserNotFoundException("Usuario No Encontrado"));
+        return userRepository.getUser().orElseThrow(() -> new NotFoundException("Usuario No Encontrado"));
     }
 }

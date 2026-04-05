@@ -1,5 +1,6 @@
 package org.ricardo.jobtrackr.service;
 
+import org.ricardo.jobtrackr.dto.CreateEnterpriseRequest;
 import org.ricardo.jobtrackr.exceptions.NotFoundException;
 import org.ricardo.jobtrackr.model.Enterprise;
 import org.ricardo.jobtrackr.repository.EnterpriseRepository;
@@ -12,5 +13,19 @@ public class EnterpriseService {
 
     public List<Enterprise> getAllEnterprises() throws SQLException {
         return enterpriseRepository.getAllEnterprises().orElseThrow(() -> new NotFoundException("No se han encontrado Empresas."));
+    }
+
+    public int createEnterprise(CreateEnterpriseRequest createEnterpriseRequest) throws SQLException {
+        Enterprise newEnterprise = toEnterprise(createEnterpriseRequest);
+
+        return enterpriseRepository.createEnterprise(newEnterprise);
+    }
+
+    private Enterprise toEnterprise(CreateEnterpriseRequest req) {
+        Enterprise enterprise = new Enterprise();
+        enterprise.setNombreEmpresa(req.getNombreEmpresa());
+        enterprise.setLogoEmpresa(req.getLogoEmpresa());
+
+        return enterprise;
     }
 }
