@@ -1,15 +1,12 @@
 package org.ricardo.jobtrackr.model;
 
+import com.google.gson.annotations.SerializedName;
+
 public enum PostulationStatus {
-    POSTULADA("POSTULADA"), REVISION("REVISION"), ENTREVISTA("ENTREVISTA"), OFERTA("OFERTA"), DESCARTADA("DESCARTADA"), RETIRADA("RETIRADA");
-
-    private final String status;
-
-    PostulationStatus(String status) {
-        this.status = status;
-    }
-
-    public String getStatus() {
-        return status;
-    }
+    POSTULADA,
+    REVISION,
+    ENTREVISTA,
+    OFERTA,
+    DESCARTADA,
+    RETIRADA;
 }

@@ -9,7 +9,7 @@ public class Postulation {
     private int usuarioId;
     private int empresaId;
     private String rol;
-    private Enum<PostulationStatus> estatus;
+    private PostulationStatus estatus;
     private int ordenKanban;
     private BigDecimal salarioMinimo;
     private BigDecimal salarioMaximo;
@@ -55,11 +55,11 @@ public class Postulation {
         this.rol = rol;
     }
 
-    public Enum<PostulationStatus> getEstatus() {
+    public PostulationStatus getEstatus() {
         return estatus;
     }
 
-    public void setEstatus(Enum<PostulationStatus> estatus) {
+    public void setEstatus(PostulationStatus estatus) {
         this.estatus = estatus;
     }
 

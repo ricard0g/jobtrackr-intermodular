@@ -26,7 +26,7 @@ public class EnterpriseController extends ControllerBase implements HttpHandler 
                 List<EnterpriseResponse> enterpriseResponses =
                         enterpriseService.getAllEnterprises().stream().map(this::toEnterpriseResponse).toList();
 
-                System.out.println("✅ Enterprise Response created correctly.");
+                System.out.println("✅ List of enterprises correctly mapped.");
 
                 sendResponse(exchange, 200, JsonUtil.toJson(enterpriseResponses));
             } catch (NotFoundException e) {
