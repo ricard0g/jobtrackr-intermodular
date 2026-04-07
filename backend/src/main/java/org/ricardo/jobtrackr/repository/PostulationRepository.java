@@ -41,7 +41,8 @@ public class PostulationRepository extends RowMapper<Postulation> {
 
     public Optional<Postulation> findPostulationById(int postulationId) throws SQLException {
         String sql = "SELECT postulacion_id, usuario_id, empresa_id, rol, estatus, orden_kanban, salario_minimo, salario_maximo, ubicacion, es_telematico, " +
-                "oferta_url, creada_en, actualizada_en, nota_postulacion, fecha_postulacion FROM postulaciones p WHERE p.postulacion_id = ?";
+                "oferta_url, creada_en, actualizada_en, nota_postulacion, fecha_postulacion FROM postulaciones p WHERE p.usuario_id = 1 AND p.postulacion_id " +
+                "= ?";
 
         try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, postulationId);

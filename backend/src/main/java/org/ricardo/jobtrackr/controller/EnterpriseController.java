@@ -30,7 +30,10 @@ public class EnterpriseController extends ControllerBase implements HttpHandler 
             case "GET" -> getAllEnterprises(exchange);
 
             case "POST" -> {
-                if (body.isBlank()) sendResponse(exchange, 400, "{\"error\":\"El Body de la peticion no puede estar vacio!\"}");
+                if (body.isBlank()) {
+                    sendResponse(exchange, 400, "{\"error\":\"El Body de la peticion no puede estar vacio!\"}");
+                    return;
+                }
 
                 CreateEnterpriseRequest newEnterprise = JsonUtil.fromJson(body, CreateEnterpriseRequest.class);
 

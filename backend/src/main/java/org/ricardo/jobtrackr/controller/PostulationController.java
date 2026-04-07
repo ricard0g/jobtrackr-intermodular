@@ -43,7 +43,10 @@ public class PostulationController extends ControllerBase implements HttpHandler
             case "POST" -> {
                 logger.info("🌐 POST Request to /api/postulaciones endpoint received...");
 
-                if (body.isBlank()) sendResponse(exchange, 400, "{\"error\":\"El Body de la peticion no puede estar vacio!\"}");
+                if (body.isBlank()) {
+                    sendResponse(exchange, 400, "{\"error\":\"El Body de la peticion no puede estar vacio!\"}");
+                    return;
+                }
 
                 CreatePostulationRequest postulationRequest = JsonUtil.fromJson(body, CreatePostulationRequest.class);
 
