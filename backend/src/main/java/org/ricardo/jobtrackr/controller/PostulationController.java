@@ -29,7 +29,7 @@ public class PostulationController extends ControllerBase implements HttpHandler
         String body = new String(exchange.getRequestBody().readAllBytes());
         String path = exchange.getRequestURI().getPath();
 
-        switch(exchange.getRequestMethod()) {
+        switch (exchange.getRequestMethod()) {
             case "GET" -> {
                 if (path.matches("/api/postulaciones/[0-9]+")) {
                     findPostulationById(exchange, path.split("/"));
@@ -48,9 +48,22 @@ public class PostulationController extends ControllerBase implements HttpHandler
                     return;
                 }
 
-                CreatePostulationRequest postulationRequest = JsonUtil.fromJson(body, CreatePostulationRequest.class);
+                if (path.matches("/api/postulaciones")) {
+                    CreatePostulationRequest postulationRequest = JsonUtil.fromJson(body, CreatePostulationRequest.class);
 
-                createPostulation(exchange, postulationRequest);
+                    createPostulation(exchange, postulationRequest);
+                } else {
+                    sendResponse(exchange, 404, "{\"error\":\"Este endpoint no existe. Peticion no valida.\"}");
+                }
+            }
+
+            case "DELETE" -> {
+                logger.info("🌐 POST Request to /api/postulaciones endpoint received...");
+                if (path.matches("/api/postulaciones/[0-9]+")) {
+                    deletePostulation(exchange, path.split("/"));
+                } else {
+                    sendResponse(exchange, 404, "{\"error\":\"Este endpoint no existe. Peticion no valida.\"}");
+                }
             }
 
             default -> {
@@ -117,6 +130,35 @@ public class PostulationController extends ControllerBase implements HttpHandler
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, "{\"error\":\"Error del servidor, intentalo mas tarde.\"}");
+        }
+    }
+
+    private void deletePostulation(HttpExchange exchange, String[] requestPathSplit) throws IOException {
+        try {
+            int postulationId = Integer.parseInt(requestPathSplit[requestPathSplit.length - 1]);
+
+            Postulation existingPostulation = postulationService.findPostulationById(postulationId);
+
+            logger.info("✅ An existing Postulation was found with ID: " + existingPostulation.getPostulacionId());
+
+            int postulationDeleted = postulationService.deletePostulation(existingPostulation.getPostulacionId());
+
+            sendResponse(exchange, 204, JsonUtil.toJson(postulationDeleted));
+        } catch (NotFoundException e) {
+            logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
+            sendResponse(exchange, NotFoundException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
+        } catch (DatabaseOperationException e) {
+            logger.log(Level.WARNING, "Error during SQL Deletion of Postulation. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, "{\"error\":\"Error durante la eliminacion de datos en la BBDD del servidor.\"}");
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, "{\"error\":\"Error del servidor, intentalo mas tarde.\"}");
         }
     }
 

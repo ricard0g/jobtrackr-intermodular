@@ -26,6 +26,10 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
                 " ID: " + postulationId));
     }
 
+    public int deletePostulation(int postulationId) throws SQLException {
+        return postulationRepository.deletePostulation(postulationId);
+    }
+
     public int createPostulation(CreatePostulationRequest postulationReq) throws SQLException, DatabaseOperationException {
         Postulation newPostulation = toModel(postulationReq);
 

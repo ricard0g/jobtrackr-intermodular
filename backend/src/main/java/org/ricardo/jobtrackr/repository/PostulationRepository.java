@@ -77,11 +77,29 @@ public class PostulationRepository extends RowMapper<Postulation> {
 
             int rowsChanged = stmt.executeUpdate();
 
-            logger.info("🧷 Statment executed. Rows Changed: " + rowsChanged);
 
             if (rowsChanged == 0) {
                 logger.warning("‼️ Rows changed is '0'. Failure during insertion of new Postulation. Throwing DatabaseOperationException...");
                 throw new DatabaseOperationException("Failure during insertion of new Postulation into DB. No new record created.");
+            }
+
+            logger.info("🧷 Statment executed successfulyl. Rows Changed: " + rowsChanged);
+
+            return rowsChanged;
+        }
+    }
+
+    public int deletePostulation(int postulationId) throws SQLException {
+        String sql = "DELETE FROM postulaciones WHERE postulacion_id = ?";
+
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, postulationId);
+
+            int rowsChanged = stmt.executeUpdate();
+
+            if (rowsChanged == 0) {
+                logger.warning("‼️ Rows changed is '0'. Failure during Deletion of a Postulation. Throwing DatabaseOperationException...");
+                throw new DatabaseOperationException("Failure during deletion of a Postulation into DB. No new record created.");
             }
 
             return rowsChanged;
