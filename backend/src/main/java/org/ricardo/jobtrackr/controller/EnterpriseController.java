@@ -26,17 +26,21 @@ public class EnterpriseController extends ControllerBase implements HttpHandler 
     public void handle(HttpExchange exchange) throws IOException {
         String body = new String(exchange.getRequestBody().readAllBytes());
 
-        if ("GET".equals(exchange.getRequestMethod())) {
-            getAllEnterprises(exchange);
-        } else if ("POST".equals(exchange.getRequestMethod())) {
-            if (body.isBlank()) sendResponse(exchange, 400, "{\"error\":\"El Body de la peticion no puede estar vacio!\"}");
+        switch (exchange.getRequestMethod()) {
+            case "GET" -> getAllEnterprises(exchange);
 
-            CreateEnterpriseRequest newEnterprise = JsonUtil.fromJson(body, CreateEnterpriseRequest.class);
+            case "POST" -> {
+                if (body.isBlank()) sendResponse(exchange, 400, "{\"error\":\"El Body de la peticion no puede estar vacio!\"}");
 
-            createEnterprise(exchange, newEnterprise);
-        } else {
-            logger.log(Level.WARNING, "❌ Invalid Request method to /api/empresas endpoint. Method received: " + exchange.getRequestMethod());
-            sendResponse(exchange, 405, "{\"error\":\"Metodo no permitido, solo Peticiones GET y POST para el endpoint /api/empresas.\"}");
+                CreateEnterpriseRequest newEnterprise = JsonUtil.fromJson(body, CreateEnterpriseRequest.class);
+
+                createEnterprise(exchange, newEnterprise);
+            }
+
+            default -> {
+                logger.log(Level.WARNING, "❌ Invalid Request method to /api/empresas endpoint. Method received: " + exchange.getRequestMethod());
+                sendResponse(exchange, 405, "{\"error\":\"Metodo no permitido, solo Peticiones GET y POST para el endpoint /api/empresas.\"}");
+            }
         }
     }
 
@@ -67,7 +71,7 @@ public class EnterpriseController extends ControllerBase implements HttpHandler 
             logger.info("✅ New Enterprise Created Successfully. Number of rows changed: " + rowsChanged);
 
             sendResponse(exchange, 201, JsonUtil.toJson(rowsChanged));
-        } catch(DatabaseOperationException e) {
+        } catch (DatabaseOperationException e) {
             logger.log(Level.WARNING, "Error during SQL Creation of new Enterprise. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, "{\"error\":\"Error durante la insercion de datos en la BBDD del servidor.\"}");
         } catch (SQLException e) {

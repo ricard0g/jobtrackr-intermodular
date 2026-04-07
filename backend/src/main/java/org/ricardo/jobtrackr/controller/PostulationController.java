@@ -29,25 +29,31 @@ public class PostulationController extends ControllerBase implements HttpHandler
         String body = new String(exchange.getRequestBody().readAllBytes());
         String path = exchange.getRequestURI().getPath();
 
-        if ("GET".equals(exchange.getRequestMethod())) {
-            if (path.matches("/api/postulaciones/[0-9]+")) {
-                findPostulationById(exchange, path.split("/"));
-            } else if (path.matches("/api/postulaciones")) {
-                getAllPostulactions(exchange);
-            } else {
-                sendResponse(exchange, 404, "{\"error\":\"Este endpoint no existe. Peticion no valida.\"}");
+        switch(exchange.getRequestMethod()) {
+            case "GET" -> {
+                if (path.matches("/api/postulaciones/[0-9]+")) {
+                    findPostulationById(exchange, path.split("/"));
+                } else if (path.matches("/api/postulaciones")) {
+                    getAllPostulactions(exchange);
+                } else {
+                    sendResponse(exchange, 404, "{\"error\":\"Este endpoint no existe. Peticion no valida.\"}");
+                }
             }
-        } else if ("POST".equals(exchange.getRequestMethod())) {
-            logger.info("🌐 POST Request to /api/postulaciones endpoint received...");
 
-            if (body.isBlank()) sendResponse(exchange, 400, "{\"error\":\"El Body de la peticion no puede estar vacio!\"}");
+            case "POST" -> {
+                logger.info("🌐 POST Request to /api/postulaciones endpoint received...");
 
-            CreatePostulationRequest postulationRequest = JsonUtil.fromJson(body, CreatePostulationRequest.class);
+                if (body.isBlank()) sendResponse(exchange, 400, "{\"error\":\"El Body de la peticion no puede estar vacio!\"}");
 
-            createPostulation(exchange, postulationRequest); // Todo: Test Endpoint
-        } else {
-            logger.log(Level.WARNING, "❌ Invalid Request method to /api/postulaciones endpoint. Method received: " + exchange.getRequestMethod());
-            sendResponse(exchange, 405, "{\"error\":\"Metodo no permitido, solo Peticiones GET y POST para el endpoint /api/postulaciones.\"}");
+                CreatePostulationRequest postulationRequest = JsonUtil.fromJson(body, CreatePostulationRequest.class);
+
+                createPostulation(exchange, postulationRequest);
+            }
+
+            default -> {
+                logger.log(Level.WARNING, "❌ Invalid Request method to /api/postulaciones endpoint. Method received: " + exchange.getRequestMethod());
+                sendResponse(exchange, 405, "{\"error\":\"Metodo no permitido, solo Peticiones GET y POST para el endpoint /api/postulaciones.\"}");
+            }
         }
     }
 
