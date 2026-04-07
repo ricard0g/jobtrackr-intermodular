@@ -2,6 +2,7 @@ package org.ricardo.jobtrackr.repository;
 
 import com.mysql.cj.x.protobuf.MysqlxPrepare;
 import org.ricardo.jobtrackr.config.DatabaseConfig;
+import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.model.Enterprise;
 
 import java.sql.*;
@@ -36,13 +37,15 @@ public class EnterpriseRepository extends RowMapper<Enterprise> {
             stmt.setString(1, enterprise.getNombreEmpresa());
             stmt.setString(2, enterprise.getLogoEmpresa());
 
-            int newEnterpriseId = stmt.executeUpdate();
+            int rowsChanged = stmt.executeUpdate();
+
+            if (rowsChanged == 0) throw new DatabaseOperationException("Failure during insertion of new Enterprise into DB. No new record created.");
 
             System.out.println("👍 New Enterprise Created:");
             System.out.println("- Nombre Empresa: " + enterprise.getNombreEmpresa());
             System.out.println("- Logo Empresa: " + enterprise.getLogoEmpresa());
 
-            return newEnterpriseId;
+            return rowsChanged;
         }
     }
 

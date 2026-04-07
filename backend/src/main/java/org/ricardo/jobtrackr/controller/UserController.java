@@ -42,8 +42,8 @@ public class UserController extends ControllerBase implements HttpHandler {
             sendResponse(exchange, NotFoundException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
         } catch (SQLException e) {
             e.printStackTrace();
-            System.out.println("Error during SQL Retrieval. Error: " + e.getMessage());
-            sendResponse(exchange, 500, "{\"error\":\"Error durante el acceso a Base de Datos en el servidor.\"}");
+            System.out.println("Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage());
+            sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Unhandled error. Error: " + e.getMessage());

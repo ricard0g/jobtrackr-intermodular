@@ -1,11 +1,11 @@
-package org.ricardo.jobtrackr.model;
+package org.ricardo.jobtrackr.dto;
+
+import org.ricardo.jobtrackr.model.PostulationStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
-public class Postulation {
-    private int postulacionId;
+public class CreatePostulationRequest {
     private int usuarioId;
     private int empresaId;
     private String rol;
@@ -16,52 +16,10 @@ public class Postulation {
     private String ubicacion;
     private boolean esTelematico;
     private String ofertaUrl;
-    private LocalDateTime creadaEn;
-    private LocalDateTime actualizadaEn;
     private String notaPostulacion;
     private LocalDate fechaPostulacion;
 
-    public Postulation() {}
-
-    public Postulation(int postulacionId, int usuarioId, int empresaId, String rol, PostulationStatus estatus, int ordenKanban, BigDecimal salarioMinimo, BigDecimal salarioMaximo, String ubicacion, boolean esTelematico, String ofertaUrl, LocalDateTime creadaEn, LocalDateTime actualizadaEn, String notaPostulacion, LocalDate fechaPostulacion) {
-        this.postulacionId = postulacionId;
-        this.usuarioId = usuarioId;
-        this.empresaId = empresaId;
-        this.rol = rol;
-        this.estatus = estatus;
-        this.ordenKanban = ordenKanban;
-        this.salarioMinimo = salarioMinimo;
-        this.salarioMaximo = salarioMaximo;
-        this.ubicacion = ubicacion;
-        this.esTelematico = esTelematico;
-        this.ofertaUrl = ofertaUrl;
-        this.creadaEn = creadaEn;
-        this.actualizadaEn = actualizadaEn;
-        this.notaPostulacion = notaPostulacion;
-        this.fechaPostulacion = fechaPostulacion;
-    }
-
-    public Postulation(int usuarioId, int empresaId, String rol, PostulationStatus estatus, int ordenKanban, BigDecimal salarioMinimo, BigDecimal salarioMaximo, String ubicacion, boolean esTelematico, String ofertaUrl, String notaPostulacion, LocalDate fechaPostulacion) {
-        this.usuarioId = usuarioId;
-        this.empresaId = empresaId;
-        this.rol = rol;
-        this.estatus = estatus;
-        this.ordenKanban = ordenKanban;
-        this.salarioMinimo = salarioMinimo;
-        this.salarioMaximo = salarioMaximo;
-        this.ubicacion = ubicacion;
-        this.esTelematico = esTelematico;
-        this.ofertaUrl = ofertaUrl;
-        this.notaPostulacion = notaPostulacion;
-        this.fechaPostulacion = fechaPostulacion;
-    }
-
-    public int getPostulacionId() {
-        return postulacionId;
-    }
-
-    public void setPostulacionId(int postulacionId) {
-        this.postulacionId = postulacionId;
+    public CreatePostulationRequest() {
     }
 
     public int getUsuarioId() {
@@ -142,22 +100,6 @@ public class Postulation {
 
     public void setOfertaUrl(String ofertaUrl) {
         this.ofertaUrl = ofertaUrl;
-    }
-
-    public LocalDateTime getCreadaEn() {
-        return creadaEn;
-    }
-
-    public void setCreadaEn(LocalDateTime creadaEn) {
-        this.creadaEn = creadaEn;
-    }
-
-    public LocalDateTime getActualizadaEn() {
-        return actualizadaEn;
-    }
-
-    public void setActualizadaEn(LocalDateTime actualizadaEn) {
-        this.actualizadaEn = actualizadaEn;
     }
 
     public String getNotaPostulacion() {

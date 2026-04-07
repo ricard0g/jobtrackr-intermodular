@@ -3,7 +3,9 @@ package org.ricardo.jobtrackr.controller;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.ricardo.jobtrackr.controller.base.ControllerBase;
+import org.ricardo.jobtrackr.dto.CreatePostulationRequest;
 import org.ricardo.jobtrackr.dto.PostulationResponse;
+import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.exceptions.NotFoundException;
 import org.ricardo.jobtrackr.model.Postulation;
 import org.ricardo.jobtrackr.service.PostulationService;
@@ -12,44 +14,60 @@ import org.ricardo.jobtrackr.util.JsonUtil;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class PostulationController extends ControllerBase implements HttpHandler {
+    private static final Logger logger = Logger.getLogger(PostulationController.class.getName());
+
     private final PostulationService postulationService = new PostulationService();
 
     @Override
-    public void handle (HttpExchange exchange) throws IOException {
+    public void handle(HttpExchange exchange) throws IOException {
+        logger.info(String.format("Received Request at --> /api/postulaciones. Request Method: %s", exchange.getRequestMethod()));
+
         String body = new String(exchange.getRequestBody().readAllBytes());
 
         if ("GET".equals(exchange.getRequestMethod())) {
             try {
                 List<PostulationResponse> postulations = postulationService.getAllPostulations().stream().map(this::toPostulationResponse).toList();
 
-                System.out.println("✅ All postulations obtained");
-
-                for (PostulationResponse postulation : postulations) {
-                    System.out.println("\n👉 Postulation " + postulation.postulacionId() + "\n");
-                    System.out.println("- Rol: " + postulation.rol());
-                    System.out.println("- Salario Minimo: " + postulation.salarioMinimo());
-                    System.out.println("- Salario Maximo: " + postulation.salarioMaximo());
-                    System.out.println("- Estatus: " + postulation.estatus());
-                    System.out.println("- Creada En: " + postulation.creadaEn());
-                    System.out.println("- Actualizada En: " + postulation.actualizadaEn() + "\n");
-                }
+                logger.info(String.format("✅ Postulations obtained. Total of: %s",postulations.size()));
 
                 sendResponse(exchange, 200, JsonUtil.toJson(postulations));
-            } catch(NotFoundException e) {
-                e.printStackTrace();
-                System.out.println("Not Found Exception. Error: " + e.getMessage());
+            } catch (NotFoundException e) {
+                logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
                 sendResponse(exchange, NotFoundException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
             } catch (SQLException e) {
-                e.printStackTrace();
-                System.out.println("Error during SQL Retrieval. Error: " + e.getMessage());
+                logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
                 sendResponse(exchange, 500, "{\"error\":\"Error durante el acceso a Base de Datos en el servidor.\"}");
             } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("Unhandled error. Error: " + e.getMessage());
+                logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
                 sendResponse(exchange, 500, "{\"error\":\"Error del servidor, intentalo mas tarde.\"}");
             }
+        } else if ("POST".equals(exchange.getRequestMethod())) {
+            if (body.isBlank()) sendResponse(exchange, 400, "{\"error\":\"El Body de la peticion no puede estar vacio!\"}");
+
+            CreatePostulationRequest postulationRequest = JsonUtil.fromJson(body, CreatePostulationRequest.class);
+
+            try {
+
+                int rowsChanged = postulationService.createPostulation(postulationRequest);
+
+                logger.info("✅ New Postulation Created Successfully. Number of rows changed: " + rowsChanged);
+
+                sendResponse(exchange, 201, JsonUtil.toJson(rowsChanged));
+            } catch (DatabaseOperationException e) {
+                logger.log(Level.WARNING, "Error during SQL Creation of new Postulation. Error: " + e.getMessage(), e);
+                sendResponse(exchange, 500, "{\"error\":\"Error durante la insercion de datos en la BBDD del servidor.\"}");
+            } catch (SQLException e) {
+                logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
+                sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
+            }
+
+        } else {
+            logger.log(Level.WARNING, "❌ Invalid Request method to /api/postulaciones endpoint. Method received: " + exchange.getRequestMethod());
+            sendResponse(exchange, 405, "{\"error\":\"Metodo no permitido, solo Peticiones GET y POST para el endpoint /api/postulaciones.\"}");
         }
     }
 

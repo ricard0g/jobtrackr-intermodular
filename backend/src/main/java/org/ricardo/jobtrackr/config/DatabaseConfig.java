@@ -5,12 +5,15 @@ import com.zaxxer.hikari.HikariDataSource;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.logging.Logger;
 
 // Usando HikariCP para una Piscina de Conexiones con MySQL, en lugar de manejar cada interaccion con la BBDD a traves de una nueva conexion lo cual es muy
 // ineficiente contando con todo el ciclo de vida no solo de la conexion sino tambien de los Statements de SQL.
 
 // 'final' para evitar herencia, quiero que DatabaseConfig sea lo mas 'singleton' posible
 public final class DatabaseConfig {
+    private static final Logger logger = Logger.getLogger(DatabaseConfig.class.getName());
+
     private static HikariDataSource dataSource;
 
     // Los valores por defecto son para trabajar en local
@@ -30,6 +33,8 @@ public final class DatabaseConfig {
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
         dataSource = new HikariDataSource(config);
+
+        logger.info("Database Connection Pool Created!");
     }
 
     public static Connection getConnection() throws SQLException {
