@@ -13,7 +13,6 @@ import org.ricardo.jobtrackr.util.JsonUtil;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,52 +27,15 @@ public class PostulationController extends ControllerBase implements HttpHandler
         logger.info(String.format("Received Request at --> /api/postulaciones. Request Method: %s", exchange.getRequestMethod()));
 
         String body = new String(exchange.getRequestBody().readAllBytes());
+        String path = exchange.getRequestURI().getPath();
 
         if ("GET".equals(exchange.getRequestMethod())) {
-            String[] requestPath = exchange.getRequestURI().getPath().split("/");
-
-            boolean idInPath = Character.isDigit(requestPath[requestPath.length - 1].charAt(0));
-
-            if (idInPath) {
-                try {
-                    int postulationId = Integer.parseInt(requestPath[requestPath.length - 1]);
-
-                    logger.info("🌐 GET Request to /api/postulaciones/{id} endpoint received...");
-
-                    PostulationResponse postulation = toPostulationResponse(postulationService.findPostulationById(postulationId));
-
-                    logger.info("✅ Postulation obtained with ID --> " + postulation.postulacionId());
-
-                    sendResponse(exchange, 200, JsonUtil.toJson(postulation));
-                } catch (NotFoundException e) {
-                    logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
-                    sendResponse(exchange, NotFoundException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
-                } catch (SQLException e) {
-                    logger.log(Level.SEVERE, "Unhandled Error during SQL the Extraction of Postulation. DB Connection error. Error: " + e.getMessage(), e);
-                    sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
-                } catch (Exception e) {
-                    logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
-                    sendResponse(exchange, 500, "{\"error\":\"Error del servidor, intentalo mas tarde.\"}");
-                }
+            if (path.matches("/api/postulaciones/[0-9]+")) {
+                findPostulationById(exchange, path.split("/"));
+            } else if (path.matches("/api/postulaciones")) {
+                getAllPostulactions(exchange);
             } else {
-                try {
-                    logger.info("🌐 GET Request to /api/postulaciones endpoint received...");
-
-                    List<PostulationResponse> postulations = postulationService.getAllPostulations().stream().map(this::toPostulationResponse).toList();
-
-                    logger.info(String.format("✅ Postulations obtained. Total of: %s",postulations.size()));
-
-                    sendResponse(exchange, 200, JsonUtil.toJson(postulations));
-                } catch (NotFoundException e) {
-                    logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
-                    sendResponse(exchange, NotFoundException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
-                } catch (SQLException e) {
-                    logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
-                    sendResponse(exchange, 500, "{\"error\":\"Error durante el acceso a Base de Datos en el servidor.\"}");
-                } catch (Exception e) {
-                    logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
-                    sendResponse(exchange, 500, "{\"error\":\"Error del servidor, intentalo mas tarde.\"}");
-                }
+                sendResponse(exchange, 404, "{\"error\":\"Este endpoint no existe. Peticion no valida.\"}");
             }
         } else if ("POST".equals(exchange.getRequestMethod())) {
             logger.info("🌐 POST Request to /api/postulaciones endpoint received...");
@@ -82,24 +44,70 @@ public class PostulationController extends ControllerBase implements HttpHandler
 
             CreatePostulationRequest postulationRequest = JsonUtil.fromJson(body, CreatePostulationRequest.class);
 
-            try {
-
-                int rowsChanged = postulationService.createPostulation(postulationRequest);
-
-                logger.info("✅ New Postulation Created Successfully. Number of rows changed: " + rowsChanged);
-
-                sendResponse(exchange, 201, JsonUtil.toJson(rowsChanged));
-            } catch (DatabaseOperationException e) {
-                logger.log(Level.WARNING, "Error during SQL Creation of new Postulation. Error: " + e.getMessage(), e);
-                sendResponse(exchange, 500, "{\"error\":\"Error durante la insercion de datos en la BBDD del servidor.\"}");
-            } catch (SQLException e) {
-                logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
-                sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
-            }
-
+            createPostulation(exchange, postulationRequest); // Todo: Test Endpoint
         } else {
             logger.log(Level.WARNING, "❌ Invalid Request method to /api/postulaciones endpoint. Method received: " + exchange.getRequestMethod());
             sendResponse(exchange, 405, "{\"error\":\"Metodo no permitido, solo Peticiones GET y POST para el endpoint /api/postulaciones.\"}");
+        }
+    }
+
+    private void getAllPostulactions(HttpExchange exchange) throws IOException {
+        try {
+            logger.info("🌐 GET Request to /api/postulaciones endpoint received...");
+
+            List<PostulationResponse> postulations = postulationService.getAllPostulations().stream().map(this::toPostulationResponse).toList();
+
+            logger.info(String.format("✅ Postulations obtained. Total of: %s", postulations.size()));
+
+            sendResponse(exchange, 200, JsonUtil.toJson(postulations));
+        } catch (NotFoundException e) {
+            logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
+            sendResponse(exchange, NotFoundException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, "{\"error\":\"Error durante el acceso a Base de Datos en el servidor.\"}");
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, "{\"error\":\"Error del servidor, intentalo mas tarde.\"}");
+        }
+    }
+
+    private void findPostulationById(HttpExchange exchange, String[] requestPathSplit) throws IOException {
+        try {
+            int postulationId = Integer.parseInt(requestPathSplit[requestPathSplit.length - 1]);
+
+            logger.info("🌐 GET Request to /api/postulaciones/{id} endpoint received...");
+
+            PostulationResponse postulation = toPostulationResponse(postulationService.findPostulationById(postulationId));
+
+            logger.info("✅ Postulation obtained with ID --> " + postulation.postulacionId());
+
+            sendResponse(exchange, 200, JsonUtil.toJson(postulation));
+        } catch (NotFoundException e) {
+            logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
+            sendResponse(exchange, NotFoundException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Unhandled Error during SQL the Extraction of Postulation. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, "{\"error\":\"Error del servidor, intentalo mas tarde.\"}");
+        }
+    }
+
+    private void createPostulation(HttpExchange exchange, CreatePostulationRequest postulationRequest) throws IOException {
+        try {
+            int rowsChanged = postulationService.createPostulation(postulationRequest);
+
+            logger.info("✅ New Postulation Created Successfully. Number of rows changed: " + rowsChanged);
+
+            sendResponse(exchange, 201, JsonUtil.toJson(rowsChanged));
+        } catch (DatabaseOperationException e) {
+            logger.log(Level.WARNING, "Error during SQL Creation of new Postulation. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, "{\"error\":\"Error durante la insercion de datos en la BBDD del servidor.\"}");
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
         }
     }
 

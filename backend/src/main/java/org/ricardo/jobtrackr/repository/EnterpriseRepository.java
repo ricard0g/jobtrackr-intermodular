@@ -9,8 +9,11 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 public class EnterpriseRepository extends RowMapper<Enterprise> {
+    private static final Logger logger = Logger.getLogger(EnterpriseRepository.class.getName());
+
     public Optional<List<Enterprise>> getAllEnterprises() throws SQLException {
         String sql = "SELECT empresa_id, nombre_empresa, logo_empresa FROM empresas";
         List<Enterprise> enterprises = new ArrayList<>();
@@ -39,11 +42,12 @@ public class EnterpriseRepository extends RowMapper<Enterprise> {
 
             int rowsChanged = stmt.executeUpdate();
 
-            if (rowsChanged == 0) throw new DatabaseOperationException("Failure during insertion of new Enterprise into DB. No new record created.");
+            if (rowsChanged == 0) {
+                logger.warning("‼️ Rows changed is '0'. Failure during insertion of new Enterprise. Throwing DatabaseOperationException...");
+                throw new DatabaseOperationException("Failure during insertion of new Enterprise into DB. No new record created.");
+            }
 
-            System.out.println("👍 New Enterprise Created:");
-            System.out.println("- Nombre Empresa: " + enterprise.getNombreEmpresa());
-            System.out.println("- Logo Empresa: " + enterprise.getLogoEmpresa());
+            logger.info("👍 New Enterprise Created. Enterprise Name: " + enterprise.getNombreEmpresa());
 
             return rowsChanged;
         }

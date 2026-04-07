@@ -27,45 +27,52 @@ public class EnterpriseController extends ControllerBase implements HttpHandler 
         String body = new String(exchange.getRequestBody().readAllBytes());
 
         if ("GET".equals(exchange.getRequestMethod())) {
-            try {
-                List<EnterpriseResponse> enterpriseResponses =
-                        enterpriseService.getAllEnterprises().stream().map(this::toEnterpriseResponse).toList();
-
-                logger.info("✅ List of enterpises fetched. Total: " + enterpriseResponses.size());
-
-                sendResponse(exchange, 200, JsonUtil.toJson(enterpriseResponses));
-            } catch (NotFoundException e) {
-                logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
-                sendResponse(exchange, NotFoundException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
-            } catch (SQLException e) {
-                logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
-                sendResponse(exchange, 500, "{\"error\":\"Error durante el acceso a Base de Datos en el servidor.\"}");
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
-                sendResponse(exchange, 500, "{\"error\":\"Error del servidor, intentalo mas tarde.\"}");
-            }
-
+            getAllEnterprises(exchange);
         } else if ("POST".equals(exchange.getRequestMethod())) {
             if (body.isBlank()) sendResponse(exchange, 400, "{\"error\":\"El Body de la peticion no puede estar vacio!\"}");
 
             CreateEnterpriseRequest newEnterprise = JsonUtil.fromJson(body, CreateEnterpriseRequest.class);
 
-            try {
-                int rowsChanged = enterpriseService.createEnterprise(newEnterprise);
-
-                logger.info("✅ New Enterprise Created Successfully. Number of rows changed: " + rowsChanged);
-
-                sendResponse(exchange, 201, JsonUtil.toJson(rowsChanged));
-            } catch(DatabaseOperationException e) {
-                logger.log(Level.WARNING, "Error during SQL Creation of new Enterprise. Error: " + e.getMessage(), e);
-                sendResponse(exchange, 500, "{\"error\":\"Error durante la insercion de datos en la BBDD del servidor.\"}");
-            } catch (SQLException e) {
-                logger.log(Level.WARNING, "Unhandled Error during SQL Creation of new Enterprise. DB Connection error. Error: " + e.getMessage(), e);
-                sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
-            }
+            createEnterprise(exchange, newEnterprise);
         } else {
             logger.log(Level.WARNING, "❌ Invalid Request method to /api/empresas endpoint. Method received: " + exchange.getRequestMethod());
             sendResponse(exchange, 405, "{\"error\":\"Metodo no permitido, solo Peticiones GET y POST para el endpoint /api/empresas.\"}");
+        }
+    }
+
+    private void getAllEnterprises(HttpExchange exchange) throws IOException {
+        try {
+            List<EnterpriseResponse> enterpriseResponses =
+                    enterpriseService.getAllEnterprises().stream().map(this::toEnterpriseResponse).toList();
+
+            logger.info("✅ List of enterpises fetched. Total: " + enterpriseResponses.size());
+
+            sendResponse(exchange, 200, JsonUtil.toJson(enterpriseResponses));
+        } catch (NotFoundException e) {
+            logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
+            sendResponse(exchange, NotFoundException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, "{\"error\":\"Error durante el acceso a Base de Datos en el servidor.\"}");
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, "{\"error\":\"Error del servidor, intentalo mas tarde.\"}");
+        }
+    }
+
+    private void createEnterprise(HttpExchange exchange, CreateEnterpriseRequest newEnterprise) throws IOException {
+        try {
+            int rowsChanged = enterpriseService.createEnterprise(newEnterprise);
+
+            logger.info("✅ New Enterprise Created Successfully. Number of rows changed: " + rowsChanged);
+
+            sendResponse(exchange, 201, JsonUtil.toJson(rowsChanged));
+        } catch(DatabaseOperationException e) {
+            logger.log(Level.WARNING, "Error during SQL Creation of new Enterprise. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, "{\"error\":\"Error durante la insercion de datos en la BBDD del servidor.\"}");
+        } catch (SQLException e) {
+            logger.log(Level.WARNING, "Unhandled Error during SQL Creation of new Enterprise. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
         }
     }
 

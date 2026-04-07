@@ -11,13 +11,17 @@ import org.ricardo.jobtrackr.util.JsonUtil;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class UserController extends ControllerBase implements HttpHandler {
+    private static final Logger logger = Logger.getLogger(UserController.class.getName());
+
     private final UserService userService = new UserService();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        System.out.println("=== Request to /api/usuario endpoint received ===");
+        logger.info("🌐 Request to /api/usuario endpoint received");
 
         if (!"GET".equals(exchange.getRequestMethod())) {
             System.out.println("❌ Invalid Request method to /api/usuario endpoint. Method received: " + exchange.getRequestMethod());
@@ -25,28 +29,20 @@ public class UserController extends ControllerBase implements HttpHandler {
             return;
         }
 
-        System.out.println("👍 Valid GET Request. Fetching User...");
-
         try {
             UserResponse userResponse = toUserResponse(userService.getUser());
 
-            System.out.println("✅ UserResponse created correctly. User fetched:");
-            System.out.println("User First Name -> " + userResponse.primerNombreUsuario());
-            System.out.println("User Last Name -> " + userResponse.primerApellidoUsuario());
-            System.out.println("User's Email -> " + userResponse.correoElectronicoUsuario());
+            logger.info("✅ User Fetched Correctly from DB. Name: " + userResponse.primerNombreUsuario() + " - First Last Nam: " + userResponse.primerApellidoUsuario());
 
             sendResponse(exchange, 200, JsonUtil.toJson(userResponse));
         } catch (NotFoundException e) {
-            e.printStackTrace();
-            System.out.println("Runtime Error. Error: " + e.getMessage());
+            logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
             sendResponse(exchange, NotFoundException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage());
+            logger.log(Level.SEVERE, "Unhandled Error during SQL Extraction of User. DB Connection error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
         } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Unhandled error. Error: " + e.getMessage());
+            logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, "{\"error\":\"Error del servidor, intentalo mas tarde.\"}");
         }
     }
