@@ -21,6 +21,11 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
         return postulationRepository.getAllPostulations().orElseThrow(() -> new NotFoundException("No hay postulaciones en la Base de Datos"));
     }
 
+    public Postulation findPostulationById(int postulationId) throws SQLException {
+        return postulationRepository.findPostulationById(postulationId).orElseThrow(() -> new NotFoundException("No se ha encontrado Postulacion con" +
+                " ID: " + postulationId));
+    }
+
     public int createPostulation(CreatePostulationRequest postulationReq) throws SQLException, DatabaseOperationException {
         Postulation newPostulation = toModel(postulationReq);
 
