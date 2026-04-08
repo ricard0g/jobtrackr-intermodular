@@ -1,5 +1,6 @@
 package org.ricardo.jobtrackr.repository;
 
+import com.mysql.cj.x.protobuf.MysqlxPrepare;
 import org.ricardo.jobtrackr.config.DatabaseConfig;
 import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.model.Postulation;
@@ -99,8 +100,42 @@ public class PostulationRepository extends RowMapper<Postulation> {
 
             if (rowsChanged == 0) {
                 logger.warning("‼️ Rows changed is '0'. Failure during Deletion of a Postulation. Throwing DatabaseOperationException...");
-                throw new DatabaseOperationException("Failure during deletion of a Postulation into DB. No new record created.");
+                throw new DatabaseOperationException("Fallo durante la eliminacion de la Postulacion con ID " + postulationId + " de la Base de Datos. " +
+                        "Intentalo de nuevo mas tarde.");
             }
+
+            return rowsChanged;
+        }
+    }
+
+    public int updatePostulation(int postulationId, Postulation updatedPostulation) throws SQLException {
+        String sql = "UPDATE postulaciones p SET p.empresa_id = ?, p.rol = ?, p.estatus = ?, p.orden_kanban = ?, p.salario_minimo = ?, p.salario_maximo = ?, " +
+                "p.ubicacion = ?, p.es_telematico = ?, p.oferta_url = ?, p.nota_postulacion = ?, p.fecha_postulacion = ? WHERE p.usuario_id = 1 AND p" +
+                ".postulacion_id = ?";
+
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, updatedPostulation.getEmpresaId());
+            stmt.setString(2, updatedPostulation.getRol());
+            stmt.setString(3, updatedPostulation.getEstatus().name());
+            stmt.setInt(4, updatedPostulation.getOrdenKanban());
+            stmt.setBigDecimal(5, updatedPostulation.getSalarioMinimo());
+            stmt.setBigDecimal(6, updatedPostulation.getSalarioMaximo());
+            stmt.setString(7, updatedPostulation.getUbicacion());
+            stmt.setBoolean(8, updatedPostulation.isEsTelematico());
+            stmt.setString(9, updatedPostulation.getOfertaUrl());
+            stmt.setString(10, updatedPostulation.getNotaPostulacion());
+            stmt.setDate(11, Date.valueOf(updatedPostulation.getFechaPostulacion()));
+            stmt.setInt(12, postulationId);
+
+            int rowsChanged = stmt.executeUpdate();
+
+            if (rowsChanged == 0) {
+                logger.warning("‼️ Rows changed is '0'. Failure during the Update of a Postulation. Throwing DatabaseOperationException...");
+                throw new DatabaseOperationException("Fallo durante la actualizacion de la Postulacion con ID " + postulationId + " en la Base de Datos. " +
+                        "Intentalo de nuevo mas tarde.");
+            }
+
+            logger.info("1️⃣ Row Updated Correctly");
 
             return rowsChanged;
         }

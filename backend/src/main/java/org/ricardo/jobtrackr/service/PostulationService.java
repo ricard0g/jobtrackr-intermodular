@@ -36,6 +36,12 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
         return postulationRepository.createPostulation(newPostulation);
     }
 
+    public int updatePostulation(int postulationId, CreatePostulationRequest postulationReq) throws SQLException {
+        Postulation updatedPostulation = toModel(postulationReq);
+
+        return postulationRepository.updatePostulation(postulationId, updatedPostulation);
+    }
+
     public Postulation toModel(CreatePostulationRequest postulationReq) {
         return new Postulation(postulationReq.getUsuarioId(), postulationReq.getEmpresaId(), postulationReq.getRol(),
                 postulationReq.getEstatus(), postulationReq.getOrdenKanban(), postulationReq.getSalarioMinimo(), postulationReq.getSalarioMaximo(),

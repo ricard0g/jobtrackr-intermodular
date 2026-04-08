@@ -75,6 +75,24 @@ public class PostulationController extends ControllerBase implements HttpHandler
                 }
             }
 
+            case "PUT" -> {
+                logger.info("🌐 DELETE Request to /api/postulaciones/{id} endpoint received...");
+                if (path.matches("/api/postulaciones/[0-9]+")) {
+                    try {
+                        CreatePostulationRequest postulationRequest = JsonUtil.fromJson(body, CreatePostulationRequest.class);
+
+                        updatePostulation(exchange, path.split("/"), postulationRequest);
+                    } catch (JsonSyntaxException e) {
+                        logger.log(Level.WARNING, "❌ Invalid input data fields on the Request Body, deserialization/parsing error. Error: " + e.getMessage(),
+                                e);
+                        sendResponse(exchange, 400, "{\"error\":\"Los datos enviados no son válidos. Revisa los campos e inténtalo de nuevo.\"}");
+                    }
+                } else {
+                    sendResponse(exchange, 404, "{\"error\":\"Este endpoint no existe. Peticion no valida.\"}");
+                }
+
+            }
+
             default -> {
                 logger.log(Level.WARNING, "❌ Invalid Request method to /api/postulaciones endpoint. Method received: " + exchange.getRequestMethod());
                 sendResponse(exchange, 405, "{\"error\":\"Metodo no permitido, solo Peticiones GET y POST para el endpoint /api/postulaciones.\"}");
@@ -135,8 +153,7 @@ public class PostulationController extends ControllerBase implements HttpHandler
             sendResponse(exchange, 201, "{\"message\":\"Nueva Postulacion Creada Correctamente.\"}");
         } catch (DatabaseOperationException e) {
             logger.log(Level.WARNING, "Error during SQL Creation of new Postulation. Error: " + e.getMessage(), e);
-            sendResponse(exchange, DatabaseOperationException.STATUS_CODE, "{\"error\":\"Error durante la insercion de datos en la Base de Datos en servidor" +
-                    ".\"}");
+            sendResponse(exchange, DatabaseOperationException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
@@ -163,10 +180,35 @@ public class PostulationController extends ControllerBase implements HttpHandler
             sendResponse(exchange, NotFoundException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
         } catch (DatabaseOperationException e) {
             logger.log(Level.WARNING, "Error during SQL Deletion of Postulation. Error: " + e.getMessage(), e);
-            sendResponse(exchange, DatabaseOperationException.STATUS_CODE, "{\"error\":\"Error durante la eliminacion de datos en la Base de Datos en " +
-                    "servidor.\"}");
+            sendResponse(exchange, DatabaseOperationException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, "{\"error\":\"Error del servidor, intentalo mas tarde.\"}");
+        }
+    }
+
+    private void updatePostulation(HttpExchange exchange, String[] requestPathSplit, CreatePostulationRequest updatedPostulation) throws IOException {
+        try {
+            int postulationId = Integer.parseInt(requestPathSplit[requestPathSplit.length - 1]);
+
+            Postulation existingPostulation = postulationService.findPostulationById(postulationId);
+
+            logger.info("✅ An existing Postulation was found to make the Update");
+
+            postulationService.updatePostulation(existingPostulation.getPostulacionId(), updatedPostulation);
+
+            sendResponse(exchange, 201, String.format("{\"message\":\"Postulacion con ID %d Actualizada Correctamente.\"}", postulationId));
+        } catch (DatabaseOperationException e) {
+            logger.log(Level.WARNING, "Error during SQL Deletion of Postulation. Error: " + e.getMessage(), e);
+            sendResponse(exchange, DatabaseOperationException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
+        } catch (NotFoundException e) {
+            logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
+            sendResponse(exchange, NotFoundException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Unhandled Error during SQL Update of Postulation. DB Connection error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
