@@ -33,8 +33,6 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
     public int createPostulation(CreatePostulationRequest postulationReq) throws SQLException, DatabaseOperationException {
         Postulation newPostulation = toModel(postulationReq);
 
-        logger.info("👉 New Postulation mapped: " + newPostulation);
-
         return postulationRepository.createPostulation(newPostulation);
     }
 

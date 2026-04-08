@@ -1,5 +1,6 @@
 package org.ricardo.jobtrackr.controller;
 
+import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.ricardo.jobtrackr.controller.base.ControllerBase;
@@ -51,9 +52,15 @@ public class PostulationController extends ControllerBase implements HttpHandler
                 }
 
                 if (path.matches("/api/postulaciones")) {
-                    CreatePostulationRequest postulationRequest = JsonUtil.fromJson(body, CreatePostulationRequest.class);
+                    try {
+                        CreatePostulationRequest postulationRequest = JsonUtil.fromJson(body, CreatePostulationRequest.class);
 
-                    createPostulation(exchange, postulationRequest);
+                        createPostulation(exchange, postulationRequest);
+                    } catch (JsonSyntaxException e) {
+                        logger.log(Level.WARNING, "❌ Invalid input data fields on the Request Body, deserialization/parsing error. Error: " + e.getMessage(),
+                                e);
+                        sendResponse(exchange, 400, "{\"error\":\"Los datos enviados no son válidos. Revisa los campos e inténtalo de nuevo.\"}");
+                    }
                 } else {
                     sendResponse(exchange, 404, "{\"error\":\"Este endpoint no existe. Peticion no valida.\"}");
                 }
@@ -128,7 +135,8 @@ public class PostulationController extends ControllerBase implements HttpHandler
             sendResponse(exchange, 201, "{\"message\":\"Nueva Postulacion Creada Correctamente.\"}");
         } catch (DatabaseOperationException e) {
             logger.log(Level.WARNING, "Error during SQL Creation of new Postulation. Error: " + e.getMessage(), e);
-            sendResponse(exchange, DatabaseOperationException.STATUS_CODE, "{\"error\":\"Error durante la insercion de datos en la Base de Datos en servidor.\"}");
+            sendResponse(exchange, DatabaseOperationException.STATUS_CODE, "{\"error\":\"Error durante la insercion de datos en la Base de Datos en servidor" +
+                    ".\"}");
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
@@ -155,7 +163,8 @@ public class PostulationController extends ControllerBase implements HttpHandler
             sendResponse(exchange, NotFoundException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
         } catch (DatabaseOperationException e) {
             logger.log(Level.WARNING, "Error during SQL Deletion of Postulation. Error: " + e.getMessage(), e);
-            sendResponse(exchange, DatabaseOperationException.STATUS_CODE, "{\"error\":\"Error durante la eliminacion de datos en la Base de Datos en servidor.\"}");
+            sendResponse(exchange, DatabaseOperationException.STATUS_CODE, "{\"error\":\"Error durante la eliminacion de datos en la Base de Datos en " +
+                    "servidor.\"}");
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");

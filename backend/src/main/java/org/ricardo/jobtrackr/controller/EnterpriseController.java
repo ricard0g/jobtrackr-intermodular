@@ -1,5 +1,6 @@
 package org.ricardo.jobtrackr.controller;
 
+import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.ricardo.jobtrackr.controller.base.ControllerBase;
@@ -35,9 +36,15 @@ public class EnterpriseController extends ControllerBase implements HttpHandler 
                     return;
                 }
 
-                CreateEnterpriseRequest newEnterprise = JsonUtil.fromJson(body, CreateEnterpriseRequest.class);
+                try {
+                    CreateEnterpriseRequest newEnterprise = JsonUtil.fromJson(body, CreateEnterpriseRequest.class);
 
-                createEnterprise(exchange, newEnterprise);
+                    createEnterprise(exchange, newEnterprise);
+                } catch (JsonSyntaxException e) {
+                    logger.log(Level.WARNING, "❌ Invalid input data fields on the Request Body, deserialization/parsing error. Error: " + e.getMessage(),
+                            e);
+                    sendResponse(exchange, 400, "{\"error\":\"Los datos enviados no son válidos. Revisa los campos e inténtalo de nuevo.\"}");
+                }
             }
 
             default -> {
