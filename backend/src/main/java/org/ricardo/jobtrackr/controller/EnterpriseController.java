@@ -73,10 +73,10 @@ public class EnterpriseController extends ControllerBase implements HttpHandler 
 
             logger.info("✅ New Enterprise Created Successfully. Number of rows changed: " + rowsChanged);
 
-            sendResponse(exchange, 201, JsonUtil.toJson(rowsChanged));
+            sendResponse(exchange, 201, "{\"message\":\"Nueva Empresa creada correctamente.\"}");
         } catch (DatabaseOperationException e) {
             logger.log(Level.WARNING, "Error during SQL Creation of new Enterprise. Error: " + e.getMessage(), e);
-            sendResponse(exchange, 500, "{\"error\":\"Error durante la insercion de datos en la BBDD del servidor.\"}");
+            sendResponse(exchange, DatabaseOperationException.STATUS_CODE, "{\"error\":\"Error durante la insercion de datos en la BBDD del servidor.\"}");
         } catch (SQLException e) {
             logger.log(Level.WARNING, "Unhandled Error during SQL Creation of new Enterprise. DB Connection error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");

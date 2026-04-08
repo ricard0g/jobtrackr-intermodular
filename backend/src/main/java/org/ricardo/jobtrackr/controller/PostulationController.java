@@ -31,6 +31,8 @@ public class PostulationController extends ControllerBase implements HttpHandler
 
         switch (exchange.getRequestMethod()) {
             case "GET" -> {
+                logger.info("🌐 GET Request to /api/postulaciones endpoint received...");
+
                 if (path.matches("/api/postulaciones/[0-9]+")) {
                     findPostulationById(exchange, path.split("/"));
                 } else if (path.matches("/api/postulaciones")) {
@@ -58,7 +60,7 @@ public class PostulationController extends ControllerBase implements HttpHandler
             }
 
             case "DELETE" -> {
-                logger.info("🌐 POST Request to /api/postulaciones endpoint received...");
+                logger.info("🌐 DELETE Request to /api/postulaciones/{id} endpoint received...");
                 if (path.matches("/api/postulaciones/[0-9]+")) {
                     deletePostulation(exchange, path.split("/"));
                 } else {
@@ -87,7 +89,7 @@ public class PostulationController extends ControllerBase implements HttpHandler
             sendResponse(exchange, NotFoundException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
-            sendResponse(exchange, 500, "{\"error\":\"Error durante el acceso a Base de Datos en el servidor.\"}");
+            sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, "{\"error\":\"Error del servidor, intentalo mas tarde.\"}");
@@ -119,14 +121,14 @@ public class PostulationController extends ControllerBase implements HttpHandler
 
     private void createPostulation(HttpExchange exchange, CreatePostulationRequest postulationRequest) throws IOException {
         try {
-            int rowsChanged = postulationService.createPostulation(postulationRequest);
+            int postulationsCreated = postulationService.createPostulation(postulationRequest);
 
-            logger.info("✅ New Postulation Created Successfully. Number of rows changed: " + rowsChanged);
+            logger.info("✅ New Postulation Created Successfully. Number of rows changed: " + postulationsCreated);
 
-            sendResponse(exchange, 201, JsonUtil.toJson(rowsChanged));
+            sendResponse(exchange, 201, "{\"message\":\"Nueva Postulacion Creada Correctamente.\"}");
         } catch (DatabaseOperationException e) {
             logger.log(Level.WARNING, "Error during SQL Creation of new Postulation. Error: " + e.getMessage(), e);
-            sendResponse(exchange, 500, "{\"error\":\"Error durante la insercion de datos en la BBDD del servidor.\"}");
+            sendResponse(exchange, DatabaseOperationException.STATUS_CODE, "{\"error\":\"Error durante la insercion de datos en la Base de Datos en servidor.\"}");
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
@@ -144,15 +146,16 @@ public class PostulationController extends ControllerBase implements HttpHandler
 
             logger.info("✅ An existing Postulation was found with ID: " + existingPostulation.getPostulacionId());
 
-            int postulationDeleted = postulationService.deletePostulation(existingPostulation.getPostulacionId());
+            postulationService.deletePostulation(existingPostulation.getPostulacionId());
 
-            sendResponse(exchange, 204, JsonUtil.toJson(postulationDeleted));
+            // Deberia ser un 204 sin contenido en el body, pero con el 200 puedo enviar el mensaje al frontend lo cual lo hace un poco mas facil de manejar
+            sendResponse(exchange, 200, String.format("{\"message\":\"Postulacion con ID %d eliminada correctamente.\"}", postulationId));
         } catch (NotFoundException e) {
             logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
             sendResponse(exchange, NotFoundException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
         } catch (DatabaseOperationException e) {
             logger.log(Level.WARNING, "Error during SQL Deletion of Postulation. Error: " + e.getMessage(), e);
-            sendResponse(exchange, 500, "{\"error\":\"Error durante la eliminacion de datos en la BBDD del servidor.\"}");
+            sendResponse(exchange, DatabaseOperationException.STATUS_CODE, "{\"error\":\"Error durante la eliminacion de datos en la Base de Datos en servidor.\"}");
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
