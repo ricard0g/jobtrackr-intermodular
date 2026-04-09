@@ -1,6 +1,5 @@
 package org.ricardo.jobtrackr.repository;
 
-import com.mysql.cj.x.protobuf.MysqlxPrepare;
 import org.ricardo.jobtrackr.config.DatabaseConfig;
 import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.model.Postulation;
@@ -8,12 +7,11 @@ import org.ricardo.jobtrackr.model.PostulationStatus;
 
 import java.math.BigDecimal;
 import java.sql.*;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class PostulationRepository extends RowMapper<Postulation> {
@@ -50,7 +48,7 @@ public class PostulationRepository extends RowMapper<Postulation> {
 
             ResultSet rs = stmt.executeQuery();
 
-            while(rs.next()) {
+            while (rs.next()) {
                 return Optional.of(mapRow(rs));
             }
 
@@ -81,7 +79,7 @@ public class PostulationRepository extends RowMapper<Postulation> {
 
             if (rowsChanged == 0) {
                 logger.warning("‼️ Rows changed is '0'. Failure during insertion of new Postulation. Throwing DatabaseOperationException...");
-                throw new DatabaseOperationException("Failure during insertion of new Postulation into DB. No new record created.");
+                throw new DatabaseOperationException("Fallo durante la creacion de Postulacion en la Base de Datos.");
             }
 
             logger.info("🧷 Statment executed successfulyl. Rows Changed: " + rowsChanged);
@@ -139,6 +137,76 @@ public class PostulationRepository extends RowMapper<Postulation> {
 
             return rowsChanged;
         }
+    }
+
+    public int patchPostulation(int postulationId, Map<String, Object[]> patchValues) throws SQLException, DatabaseOperationException {
+        List<String> keySet = patchValues.keySet().stream().toList();
+
+        String sql = buildDynamicSqlStmt(postulationId, keySet);
+
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            List<Object[]> valuesList = patchValues.values().stream().toList();
+
+            for (int i = 0; i < valuesList.size(); i++) {
+                Object[] values = valuesList.get(i);
+
+                logger.info("PATCH values to execute --> " + "Index: " + i + " | Actual Value: " + values[0] + " | Data Type: " + values[1]);
+
+                switch ((String) values[1]) {
+                    case "Integer" -> {
+                        Double value = (Double) values[0];
+                        stmt.setInt(i + 1, (int) value.intValue());
+                    }
+
+                    case "String" -> {
+                        stmt.setString(i + 1, (String) values[0]);
+                    }
+
+                    case "BigDecimal" -> {
+                        stmt.setBigDecimal(i + 1, (BigDecimal) values[0]);
+                    }
+
+                    case "Date" -> {
+                        stmt.setDate(i + 1, (Date) Date.valueOf((String) values[0]));
+                    }
+
+                    case "Boolean" -> {
+                        stmt.setBoolean(i + 1, (boolean) values[0]);
+                    }
+                }
+
+            }
+
+
+            logger.info("✉️ Full Stmt: " + stmt.toString());
+
+            int rowsChanged = stmt.executeUpdate();
+
+            if (rowsChanged == 0) {
+                logger.warning("‼️ Rows changed is '0'. Failure while Patching a Postulation. Throwing DatabaseOperationException...");
+                throw new DatabaseOperationException("Fallo durante la actualizacion parcial de la Postulacion con ID " + postulationId + " en la Base de" +
+                        " Datos. " +
+                        "Intentalo de nuevo mas tarde.");
+            }
+
+            return rowsChanged;
+        }
+    }
+
+    private String buildDynamicSqlStmt(int postulationId, List<String> keySet) {
+        StringBuilder sqlBuilder = new StringBuilder("UPDATE postulaciones p SET");
+
+        for (int i = 0; i < keySet.size(); i++) {
+            if (i == keySet.size() - 1) {
+                sqlBuilder.append(String.format(" p.%s = ? ", keySet.get(i)));
+                break;
+            }
+            sqlBuilder.append(String.format(" p.%s = ?, ", keySet.get(i)));
+        }
+
+        sqlBuilder.append(String.format(" WHERE p.usuario_id = 1 AND p.postulacion_id = %d", postulationId));
+
+        return sqlBuilder.toString();
     }
 
     protected Postulation mapRow(ResultSet rs) throws SQLException {

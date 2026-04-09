@@ -8,13 +8,14 @@ import org.ricardo.jobtrackr.dto.CreatePostulationRequest;
 import org.ricardo.jobtrackr.dto.PostulationResponse;
 import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.exceptions.NotFoundException;
+import org.ricardo.jobtrackr.exceptions.ValidationException;
 import org.ricardo.jobtrackr.model.Postulation;
 import org.ricardo.jobtrackr.service.PostulationService;
 import org.ricardo.jobtrackr.util.JsonUtil;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -91,6 +92,23 @@ public class PostulationController extends ControllerBase implements HttpHandler
                     sendResponse(exchange, 404, "{\"error\":\"Este endpoint no existe. Peticion no valida.\"}");
                 }
 
+            }
+
+            case "PATCH" -> {
+                logger.info("🌐 PATCH Request to /api/postulaciones/{id} endpoint received...");
+                if (path.matches("/api/postulaciones/[0-9]+")) {
+                    try {
+                        Map<String, Object> patchValues = JsonUtil.fromJson(body, HashMap.class);
+
+                        patchPostulation(exchange, patchValues, path.split("/"));
+                    } catch (ClassCastException e) {
+                        logger.log(Level.WARNING, "❌ Invalid input data fields on the Request Body, deserialization/parsing error. Error: " + e.getMessage(),
+                                e);
+                        sendResponse(exchange, 400, "{\"error\":\"Los datos enviados no son válidos. Revisa los campos e inténtalo de nuevo.\"}");
+                    }
+                } else {
+                    sendResponse(exchange, 404, "{\"error\":\"Este endpoint no existe. Peticion no valida.\"}");
+                }
             }
 
             default -> {
@@ -201,6 +219,39 @@ public class PostulationController extends ControllerBase implements HttpHandler
             postulationService.updatePostulation(existingPostulation.getPostulacionId(), updatedPostulation);
 
             sendResponse(exchange, 201, String.format("{\"message\":\"Postulacion con ID %d Actualizada Correctamente.\"}", postulationId));
+        } catch (DatabaseOperationException e) {
+            logger.log(Level.WARNING, "Error during SQL Deletion of Postulation. Error: " + e.getMessage(), e);
+            sendResponse(exchange, DatabaseOperationException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
+        } catch (NotFoundException e) {
+            logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
+            sendResponse(exchange, NotFoundException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Unhandled Error during SQL Update of Postulation. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, "{\"error\":\"Error del servidor, intentalo mas tarde.\"}");
+        }
+    }
+
+    private void patchPostulation(HttpExchange exchange, Map<String, Object> patchValues, String[] requestPathSplit) throws IOException {
+        try {
+            int postulationId = Integer.parseInt(requestPathSplit[requestPathSplit.length - 1]);
+
+            Postulation existingPostulation = postulationService.findPostulationById(postulationId);
+
+            logger.info("✅ An existing Postulation was found to execute the Patch");
+
+            postulationService.patchPostulation(existingPostulation.getPostulacionId(), patchValues);
+
+            sendResponse(exchange, 200, String.format("{\"message\":\"Postulacion con ID %d Actualización Parcial ejecutada Correctamente.\"}", postulationId));
+        } catch (ClassCastException e) {
+            logger.log(Level.WARNING, "❌ Invalid input data fields on the Request Body, deserialization/parsing error. Error: " + e.getMessage(),
+                    e);
+            sendResponse(exchange, 400, "{\"error\":\"Los datos enviados no son válidos. Revisa los campos e inténtalo de nuevo.\"}");
+        } catch (ValidationException e) {
+            logger.log(Level.WARNING, "Field Validation Error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 400, String.format("{\"error\":\"%s\"}", e.getMessage()));
         } catch (DatabaseOperationException e) {
             logger.log(Level.WARNING, "Error during SQL Deletion of Postulation. Error: " + e.getMessage(), e);
             sendResponse(exchange, DatabaseOperationException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
