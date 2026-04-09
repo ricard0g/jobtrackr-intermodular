@@ -77,7 +77,7 @@ public class PostulationController extends ControllerBase implements HttpHandler
             }
 
             case "PUT" -> {
-                logger.info("🌐 DELETE Request to /api/postulaciones/{id} endpoint received...");
+                logger.info("🌐 PUT Request to /api/postulaciones/{id} endpoint received...");
                 if (path.matches("/api/postulaciones/[0-9]+")) {
                     try {
                         CreatePostulationRequest postulationRequest = JsonUtil.fromJson(body, CreatePostulationRequest.class);
@@ -141,8 +141,6 @@ public class PostulationController extends ControllerBase implements HttpHandler
     private void findPostulationById(HttpExchange exchange, String[] requestPathSplit) throws IOException {
         try {
             int postulationId = Integer.parseInt(requestPathSplit[requestPathSplit.length - 1]);
-
-            logger.info("🌐 GET Request to /api/postulaciones/{id} endpoint received...");
 
             PostulationResponse postulation = toPostulationResponse(postulationService.findPostulationById(postulationId));
 
@@ -237,11 +235,7 @@ public class PostulationController extends ControllerBase implements HttpHandler
         try {
             int postulationId = Integer.parseInt(requestPathSplit[requestPathSplit.length - 1]);
 
-            Postulation existingPostulation = postulationService.findPostulationById(postulationId);
-
-            logger.info("✅ An existing Postulation was found to execute the Patch");
-
-            postulationService.patchPostulation(existingPostulation.getPostulacionId(), patchValues);
+            postulationService.patchPostulation(postulationId, patchValues);
 
             sendResponse(exchange, 200, String.format("{\"message\":\"Postulacion con ID %d Actualización Parcial ejecutada Correctamente.\"}", postulationId));
         } catch (ClassCastException e) {

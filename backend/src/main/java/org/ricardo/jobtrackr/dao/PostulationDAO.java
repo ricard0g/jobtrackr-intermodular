@@ -140,45 +140,45 @@ public class PostulationDAO extends RowMapper<Postulation> {
     }
 
     public int patchPostulation(int postulationId, Map<String, Object[]> patchValues) throws SQLException, DatabaseOperationException {
-        List<String> keySet = patchValues.keySet().stream().toList();
+        // Nuestra lista de Entries (key-value) en nuestro HashMap patchValues
+        List<Map.Entry<String, Object[]>> entries = new ArrayList<>(patchValues.entrySet());
 
-        String sql = buildDynamicSqlStmt(postulationId, keySet);
+        String sql = buildDynamicSqlStmt(entries);
 
         try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            List<Object[]> valuesList = patchValues.values().stream().toList();
-
-            for (int i = 0; i < valuesList.size(); i++) {
-                Object[] values = valuesList.get(i);
+            for (int i = 0; i < entries.size(); i++) {
+                Object[] values = entries.get(i).getValue();
 
                 logger.info("PATCH values to execute --> " + "Index: " + i + " | Actual Value: " + values[0] + " | Data Type: " + values[1]);
 
                 switch ((String) values[1]) {
                     case "Integer" -> {
                         Double value = (Double) values[0];
-                        stmt.setInt(i + 1, (int) value.intValue());
+                        stmt.setInt(i+1, (int) value.intValue());
                     }
 
                     case "String" -> {
-                        stmt.setString(i + 1, (String) values[0]);
+                        stmt.setString(i+1, (String) values[0]);
                     }
 
                     case "BigDecimal" -> {
-                        stmt.setBigDecimal(i + 1, (BigDecimal) values[0]);
+                        stmt.setBigDecimal(i+1, (BigDecimal) values[0]);
                     }
 
                     case "Date" -> {
-                        stmt.setDate(i + 1, (Date) Date.valueOf((String) values[0]));
+                        stmt.setDate(i+1, (Date) Date.valueOf((String) values[0]));
                     }
 
                     case "Boolean" -> {
-                        stmt.setBoolean(i + 1, (boolean) values[0]);
+                        stmt.setBoolean(i+1, (boolean) values[0]);
                     }
                 }
 
             }
 
+            stmt.setInt(entries.size()+1, postulationId);
 
-            logger.info("✉️ Full Stmt: " + stmt.toString());
+            logger.info("✉️ Full Stmt: " + stmt);
 
             int rowsChanged = stmt.executeUpdate();
 
@@ -193,18 +193,18 @@ public class PostulationDAO extends RowMapper<Postulation> {
         }
     }
 
-    private String buildDynamicSqlStmt(int postulationId, List<String> keySet) {
+    private String buildDynamicSqlStmt(List<Map.Entry<String, Object[]>> entries) {
         StringBuilder sqlBuilder = new StringBuilder("UPDATE postulaciones p SET");
 
-        for (int i = 0; i < keySet.size(); i++) {
-            if (i == keySet.size() - 1) {
-                sqlBuilder.append(String.format(" p.%s = ? ", keySet.get(i)));
+        for (int i = 0; i < entries.size(); i++) {
+            if (i == entries.size() - 1) {
+                sqlBuilder.append(String.format(" p.%s = ? ", entries.get(i).getKey()));
                 break;
             }
-            sqlBuilder.append(String.format(" p.%s = ?, ", keySet.get(i)));
+            sqlBuilder.append(String.format(" p.%s = ?, ", entries.get(i).getKey()));
         }
 
-        sqlBuilder.append(String.format(" WHERE p.usuario_id = 1 AND p.postulacion_id = %d", postulationId));
+        sqlBuilder.append(" WHERE p.usuario_id = 1 AND p.postulacion_id = ?");
 
         return sqlBuilder.toString();
     }
