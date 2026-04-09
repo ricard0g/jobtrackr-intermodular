@@ -113,15 +113,14 @@ public class PostulationController extends ControllerBase implements HttpHandler
 
             default -> {
                 logger.log(Level.WARNING, "❌ Invalid Request method to /api/postulaciones endpoint. Method received: " + exchange.getRequestMethod());
-                sendResponse(exchange, 405, "{\"error\":\"Metodo no permitido, solo Peticiones GET y POST para el endpoint /api/postulaciones.\"}");
+                sendResponse(exchange, 405, "{\"error\":\"Metodo no permitido, solo Peticiones GET/DELETE/POST/PUT/PATCH para el endpoint /api/postulaciones" +
+                        ".\"}");
             }
         }
     }
 
     private void getAllPostulactions(HttpExchange exchange) throws IOException {
         try {
-            logger.info("🌐 GET Request to /api/postulaciones endpoint received...");
-
             List<PostulationResponse> postulations = postulationService.getAllPostulations().stream().map(this::toPostulationResponse).toList();
 
             logger.info(String.format("✅ Postulations obtained. Total of: %s", postulations.size()));

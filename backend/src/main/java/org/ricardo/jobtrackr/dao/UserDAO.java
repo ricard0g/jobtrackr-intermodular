@@ -1,4 +1,4 @@
-package org.ricardo.jobtrackr.repository;
+package org.ricardo.jobtrackr.dao;
 
 import org.ricardo.jobtrackr.config.DatabaseConfig;
 import org.ricardo.jobtrackr.model.User;
@@ -6,7 +6,7 @@ import org.ricardo.jobtrackr.model.User;
 import java.sql.*;
 import java.util.Optional;
 
-public class UserRepository extends RowMapper<User> {
+public class UserDAO extends RowMapper<User> {
 
     public Optional<User> getUser() throws SQLException {
         String sql = "SELECT usuario_id, primer_nombre_usuario, segundo_nombre_usuario, primer_apellido_usuario, segundo_apellido_usuario, " +

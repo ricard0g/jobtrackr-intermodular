@@ -1,13 +1,12 @@
 package org.ricardo.jobtrackr.service;
 
-import com.mysql.cj.xdevapi.Schema;
 import org.ricardo.jobtrackr.dto.CreatePostulationRequest;
 import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.exceptions.NotFoundException;
 import org.ricardo.jobtrackr.exceptions.ValidationException;
 import org.ricardo.jobtrackr.interfaces.DtoMapper;
 import org.ricardo.jobtrackr.model.Postulation;
-import org.ricardo.jobtrackr.repository.PostulationRepository;
+import org.ricardo.jobtrackr.dao.PostulationDAO;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -22,31 +21,31 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
     private static final Set<String> ALLOWED_PATCH_FIELDS = Set.of("postulacionId", "usuarioId", "empresaId", "rol", "estatus", "ordenKanban", "salarioMinimo",
             "salarioMaximo", "ubicacion", "esTelematico", "ofertaUrl", "notaPostulacion", "fechaPostulacion");
 
-    private final PostulationRepository postulationRepository = new PostulationRepository();
+    private final PostulationDAO postulationDAO = new PostulationDAO();
 
     public List<Postulation> getAllPostulations() throws SQLException {
-        return postulationRepository.getAllPostulations().orElseThrow(() -> new NotFoundException("No hay postulaciones en la Base de Datos"));
+        return postulationDAO.getAllPostulations().orElseThrow(() -> new NotFoundException("No hay postulaciones en la Base de Datos"));
     }
 
     public Postulation findPostulationById(int postulationId) throws SQLException {
-        return postulationRepository.findPostulationById(postulationId).orElseThrow(() -> new NotFoundException("No se ha encontrado Postulacion con" +
+        return postulationDAO.findPostulationById(postulationId).orElseThrow(() -> new NotFoundException("No se ha encontrado Postulacion con" +
                 " ID: " + postulationId));
     }
 
     public int deletePostulation(int postulationId) throws SQLException {
-        return postulationRepository.deletePostulation(postulationId);
+        return postulationDAO.deletePostulation(postulationId);
     }
 
     public int createPostulation(CreatePostulationRequest postulationReq) throws SQLException, DatabaseOperationException {
         Postulation newPostulation = toModel(postulationReq);
 
-        return postulationRepository.createPostulation(newPostulation);
+        return postulationDAO.createPostulation(newPostulation);
     }
 
     public int updatePostulation(int postulationId, CreatePostulationRequest postulationReq) throws SQLException {
         Postulation updatedPostulation = toModel(postulationReq);
 
-        return postulationRepository.updatePostulation(postulationId, updatedPostulation);
+        return postulationDAO.updatePostulation(postulationId, updatedPostulation);
     }
 
     public int patchPostulation(int postulationId, Map<String, Object> patchValues) throws SQLException, ValidationException, DatabaseOperationException {
@@ -65,7 +64,7 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
 
         Map<String, Object[]> formattedPatchValues = formatKeys(patchValues);
 
-        return postulationRepository.patchPostulation(postulationId, formattedPatchValues);
+        return postulationDAO.patchPostulation(postulationId, formattedPatchValues);
     }
 
     private boolean validPatchFields(Set<String> keySet) {

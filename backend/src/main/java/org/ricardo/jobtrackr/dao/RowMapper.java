@@ -1,4 +1,4 @@
-package org.ricardo.jobtrackr.repository;
+package org.ricardo.jobtrackr.dao;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

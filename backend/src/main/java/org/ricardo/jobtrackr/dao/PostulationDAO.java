@@ -1,4 +1,4 @@
-package org.ricardo.jobtrackr.repository;
+package org.ricardo.jobtrackr.dao;
 
 import org.ricardo.jobtrackr.config.DatabaseConfig;
 import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
@@ -14,8 +14,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Logger;
 
-public class PostulationRepository extends RowMapper<Postulation> {
-    private static final Logger logger = Logger.getLogger(PostulationRepository.class.getName());
+public class PostulationDAO extends RowMapper<Postulation> {
+    private static final Logger logger = Logger.getLogger(PostulationDAO.class.getName());
 
     public Optional<List<Postulation>> getAllPostulations() throws SQLException {
         String sql = "SELECT postulacion_id, usuario_id, empresa_id, rol, estatus, orden_kanban, salario_minimo, salario_maximo, ubicacion, es_telematico, " +

@@ -1,6 +1,5 @@
-package org.ricardo.jobtrackr.repository;
+package org.ricardo.jobtrackr.dao;
 
-import com.mysql.cj.x.protobuf.MysqlxPrepare;
 import org.ricardo.jobtrackr.config.DatabaseConfig;
 import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.model.Enterprise;
@@ -11,8 +10,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-public class EnterpriseRepository extends RowMapper<Enterprise> {
-    private static final Logger logger = Logger.getLogger(EnterpriseRepository.class.getName());
+public class EnterpriseDAO extends RowMapper<Enterprise> {
+    private static final Logger logger = Logger.getLogger(EnterpriseDAO.class.getName());
 
     public Optional<List<Enterprise>> getAllEnterprises() throws SQLException {
         String sql = "SELECT empresa_id, nombre_empresa, logo_empresa FROM empresas";
