@@ -38,10 +38,17 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
         return postulationDAO.deletePostulation(postulationId);
     }
 
-    public int createPostulation(CreatePostulationRequest postulationReq) throws SQLException, DatabaseOperationException {
-        Postulation newPostulation = toModel(postulationReq);
+    public int createPostulation(CreatePostulationRequest postulationReq) throws SQLException, DatabaseOperationException, IllegalArgumentException, ValidationException {
+        try {
+            Postulation newPostulation = toModel(postulationReq);
 
-        return postulationDAO.createPostulation(newPostulation);
+            return postulationDAO.createPostulation(newPostulation);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Valor del campo 'estatus' es invalido. Revisalo e intentalo de nuevo. Valor recibido: '" + postulationReq.getEstatus() +
+                    "'.");
+        } catch(NullPointerException e) {
+            throw new ValidationException("El campo 'estatus' no esta presente, peticion invalida. Revisalo e intentalo de nuevo.");
+        }
     }
 
     public int updatePostulation(int postulationId, CreatePostulationRequest postulationReq) throws SQLException {
@@ -69,12 +76,13 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
         return postulationDAO.patchPostulation(postulationId, formattedPatchValues);
     }
 
-    public int patchStatus(int postulationId, UpdateStatusRequest statusUpdateReq) throws SQLException, IllegalArgumentException, ValidationException, DatabaseOperationException {
+    public int patchStatus(int postulationId, UpdateStatusRequest statusUpdateReq) throws SQLException, IllegalArgumentException, ValidationException,
+            DatabaseOperationException {
         try {
             String statusValue = PostulationStatus.valueOf(statusUpdateReq.getEstatus()).name();
 
             return postulationDAO.patchStatus(postulationId, statusValue);
-        } catch(NullPointerException e) {
+        } catch (NullPointerException e) {
             throw new ValidationException("El campo 'estatus' no esta presente, peticion invalida. Revisalo e intentalo de nuevo.");
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Valor del campo 'estatus' es invalido. Revisalo e intentalo de nuevo. Valor recibido: '" + statusUpdateReq.getEstatus() + "'.");
@@ -105,7 +113,8 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
 
     public Postulation toModel(CreatePostulationRequest postulationReq) {
         return new Postulation(postulationReq.getUsuarioId(), postulationReq.getEmpresaId(), postulationReq.getRol(),
-                postulationReq.getEstatus(), postulationReq.getOrdenKanban(), postulationReq.getSalarioMinimo(), postulationReq.getSalarioMaximo(),
+                PostulationStatus.valueOf(postulationReq.getEstatus()), postulationReq.getOrdenKanban(), postulationReq.getSalarioMinimo(),
+                postulationReq.getSalarioMaximo(),
                 postulationReq.getUbicacion(), postulationReq.isEsTelematico(), postulationReq.getOfertaUrl(), postulationReq.getNotaPostulacion(),
                 postulationReq.getFechaPostulacion());
     }

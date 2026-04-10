@@ -1,6 +1,7 @@
 package org.ricardo.jobtrackr.controller;
 
 import com.google.gson.JsonSyntaxException;
+import com.mysql.cj.xdevapi.Schema;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.ricardo.jobtrackr.controller.base.ControllerBase;
@@ -177,6 +178,9 @@ public class PostulationController extends ControllerBase implements HttpHandler
             logger.info("✅ New Postulation Created Successfully. Number of rows changed: " + postulationsCreated);
 
             sendResponse(exchange, 201, "{\"message\":\"Nueva Postulacion Creada Correctamente.\"}");
+        } catch (IllegalArgumentException | ValidationException e) {
+            logger.log(Level.WARNING, "Field Validation Error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, ValidationException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
         } catch (DatabaseOperationException e) {
             logger.log(Level.WARNING, "Error during SQL Creation of new Postulation. Error: " + e.getMessage(), e);
             sendResponse(exchange, DatabaseOperationException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
