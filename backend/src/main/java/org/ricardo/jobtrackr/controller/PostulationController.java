@@ -119,6 +119,16 @@ public class PostulationController extends ControllerBase implements HttpHandler
                                 e);
                         sendResponse(exchange, 400, errorString("Los datos enviados no son válidos. Revisa los campos e inténtalo de nuevo."));
                     }
+                } else if (path.matches("/api/postulaciones/[0-9]+/orden")) {
+                    try {
+                        Map<String, Double> orderUpdateReq = JsonUtil.fromJson(body, HashMap.class);
+
+                        patchOrder(exchange, orderUpdateReq, path.split("/"));
+                    } catch (JsonSyntaxException e) {
+                        logger.log(Level.WARNING, "❌ Invalid input data fields on the Request Body, deserialization/parsing error. Error: " + e.getMessage(),
+                                e);
+                        sendResponse(exchange, 400, errorString("Los datos enviados no son válidos. Revisa los campos e inténtalo de nuevo."));
+                    }
                 } else if (path.matches("/api/postulaciones/[0-9]+")) {
                     try {
                         Map<String, Object> patchValues = JsonUtil.fromJson(body, HashMap.class);
@@ -257,14 +267,18 @@ public class PostulationController extends ControllerBase implements HttpHandler
         }
     }
 
-    private void patchStatus(HttpExchange exchange, UpdateStatusRequest statusUpdateReq, String[] requestPathSplit) throws IOException {
+    private void patchPostulation(HttpExchange exchange, Map<String, Object> patchValues, String[] requestPathSplit) throws IOException {
         try {
-            int postulationId = Integer.parseInt(requestPathSplit[3]);
+            int postulationId = Integer.parseInt(requestPathSplit[requestPathSplit.length - 1]);
 
-            postulationService.patchStatus(postulationId, statusUpdateReq);
+            postulationService.patchPostulation(postulationId, patchValues);
 
-            sendResponse(exchange, 200, successMessage("Estatus Actualizada para Postulacion con ID " + postulationId));
-        } catch (IllegalArgumentException | ValidationException e) {
+            sendResponse(exchange, 200, successMessage("Postulacion con ID " + postulationId + " Actualización Parcial ejecutada Correctamente."));
+        } catch (ClassCastException e) {
+            logger.log(Level.WARNING, "❌ Invalid input data fields on the Request Body, deserialization/parsing error. Error: " + e.getMessage(),
+                    e);
+            sendResponse(exchange, 400, errorString("Los datos enviados no son válidos. Revisa los campos e inténtalo de nuevo."));
+        } catch (ValidationException e) {
             logger.log(Level.WARNING, "Field Validation Error. Error: " + e.getMessage(), e);
             sendResponse(exchange, ValidationException.STATUS_CODE, errorString(e.getMessage()));
         } catch (DatabaseOperationException e) {
@@ -282,18 +296,38 @@ public class PostulationController extends ControllerBase implements HttpHandler
         }
     }
 
-    private void patchPostulation(HttpExchange exchange, Map<String, Object> patchValues, String[] requestPathSplit) throws IOException {
+    private void patchOrder(HttpExchange exchange, Map<String, Double> updateOrderRequest, String[] requestPathSplit) throws IOException {
         try {
-            int postulationId = Integer.parseInt(requestPathSplit[requestPathSplit.length - 1]);
+            int postulationId = Integer.parseInt(requestPathSplit[3]);
 
-            postulationService.patchPostulation(postulationId, patchValues);
+            postulationService.patchOrder(postulationId, updateOrderRequest);
 
-            sendResponse(exchange, 200, successMessage("Postulacion con ID " + postulationId + " Actualización Parcial ejecutada Correctamente."));
+            sendResponse(exchange, 200, successMessage("Orden Kanban Actualizado para Postulacion con ID " + postulationId));
+        } catch (ValidationException e) {
+            logger.log(Level.WARNING, "Field Validation Error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, ValidationException.STATUS_CODE, errorString(e.getMessage()));
         } catch (ClassCastException e) {
             logger.log(Level.WARNING, "❌ Invalid input data fields on the Request Body, deserialization/parsing error. Error: " + e.getMessage(),
                     e);
-            sendResponse(exchange, 400, errorString("Los datos enviados no son válidos. Revisa los campos e inténtalo de nuevo."));
-        } catch (ValidationException e) {
+            sendResponse(exchange, 400, errorString("Los datos enviados no son válidos, Orden Kanban debe ser un numero. Revisa los campos e inténtalo de " +
+                    "nuevo."));
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Unhandled Error during SQL Update of Postulation. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, errorString("Error de conexion con Base de Datos desde el servidor."));
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, errorString("Error del servidor, intentalo mas tarde."));
+        }
+    }
+
+    private void patchStatus(HttpExchange exchange, UpdateStatusRequest statusUpdateReq, String[] requestPathSplit) throws IOException {
+        try {
+            int postulationId = Integer.parseInt(requestPathSplit[3]);
+
+            postulationService.patchStatus(postulationId, statusUpdateReq);
+
+            sendResponse(exchange, 200, successMessage("Estatus Actualizada para Postulacion con ID " + postulationId));
+        } catch (IllegalArgumentException | ValidationException e) {
             logger.log(Level.WARNING, "Field Validation Error. Error: " + e.getMessage(), e);
             sendResponse(exchange, ValidationException.STATUS_CODE, errorString(e.getMessage()));
         } catch (DatabaseOperationException e) {

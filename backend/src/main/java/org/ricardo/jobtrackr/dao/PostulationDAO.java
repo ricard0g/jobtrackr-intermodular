@@ -232,6 +232,28 @@ public class PostulationDAO extends RowMapper<Postulation> {
         }
     }
 
+    public int patchOrder(int postulationId, int orderValue) throws SQLException {
+        String sql = "UPDATE postulaciones p SET p.orden_kanban = ? WHERE p.usuario_id = 1 AND p.postulacion_id = ?";
+
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, orderValue);
+            stmt.setInt(2, postulationId);
+
+            int rowsChanged = stmt.executeUpdate();
+
+            if (rowsChanged == 0) {
+                logger.warning("‼️ Rows changed is '0'. Failure while Patching a Postulation. Throwing DatabaseOperationException...");
+                throw new DatabaseOperationException("Fallo actualizando el Orden de la Postulacion con ID " + postulationId + " en la Base de" +
+                        " Datos. " +
+                        "Intentalo de nuevo mas tarde.");
+            }
+
+            logger.info("✅ Postulation Status Updated Correctly");
+
+            return rowsChanged;
+        }
+    }
+
     protected Postulation mapRow(ResultSet rs) throws SQLException {
         Postulation postulation = new Postulation();
         postulation.setPostulacionId(rs.getInt("postulacion_id"));

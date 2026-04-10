@@ -76,19 +76,6 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
         return postulationDAO.patchPostulation(postulationId, formattedPatchValues);
     }
 
-    public int patchStatus(int postulationId, UpdateStatusRequest statusUpdateReq) throws SQLException, IllegalArgumentException, ValidationException,
-            DatabaseOperationException {
-        try {
-            String statusValue = PostulationStatus.valueOf(statusUpdateReq.getEstatus()).name();
-
-            return postulationDAO.patchStatus(postulationId, statusValue);
-        } catch (NullPointerException e) {
-            throw new ValidationException("El campo 'estatus' no esta presente, peticion invalida. Revisalo e intentalo de nuevo.");
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Valor del campo 'estatus' es invalido. Revisalo e intentalo de nuevo. Valor recibido: '" + statusUpdateReq.getEstatus() + "'.");
-        }
-    }
-
     private boolean validPatchFields(Set<String> keySet) {
         return ALLOWED_PATCH_FIELDS.containsAll(keySet);
     }
@@ -109,6 +96,30 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
         }
 
         return formattedPatchValues;
+    }
+
+    public int patchStatus(int postulationId, UpdateStatusRequest statusUpdateReq) throws SQLException, IllegalArgumentException, ValidationException,
+            DatabaseOperationException {
+        try {
+            String statusValue = PostulationStatus.valueOf(statusUpdateReq.getEstatus()).name();
+
+            return postulationDAO.patchStatus(postulationId, statusValue);
+        } catch (NullPointerException e) {
+            throw new ValidationException("El campo 'estatus' no esta presente, peticion invalida. Revisalo e intentalo de nuevo.");
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Valor del campo 'estatus' es invalido. Revisalo e intentalo de nuevo. Valor recibido: '" + statusUpdateReq.getEstatus() + "'.");
+        }
+    }
+
+    public int patchOrder(int postulationId, Map<String, Double> updateOrderReq) throws SQLException, ValidationException, ClassCastException {
+        if(!updateOrderReq.containsKey("ordenKanban")) throw new ValidationException("El campo 'ordenKanban' no esta presente, peticion invalida. Reivsalo e " +
+                "intentalo de nuevo");
+
+        int orderValue = updateOrderReq.get("ordenKanban").intValue();
+
+        System.out.println(orderValue);
+
+        return postulationDAO.patchOrder(postulationId, orderValue);
     }
 
     public Postulation toModel(CreatePostulationRequest postulationReq) {
