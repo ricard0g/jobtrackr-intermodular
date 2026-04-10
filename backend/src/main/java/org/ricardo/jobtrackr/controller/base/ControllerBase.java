@@ -15,4 +15,16 @@ public class ControllerBase {
         exchange.getResponseBody().write(response);
         exchange.getResponseBody().close();
     }
+
+    protected String errorString(String errorStr) {
+        return String.format("{\"error\":\"%s\"}", errorStr);
+    }
+
+    protected String successMessage(String message) {
+        return String.format("{\"message\":\"%s\"}", message);
+    }
+
+    protected String successMessage(String message, int postulationId) {
+        return String.format("{\"message\":\"%s\"}", message);
+    }
 }

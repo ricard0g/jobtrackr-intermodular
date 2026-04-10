@@ -33,7 +33,7 @@ public class EnterpriseController extends ControllerBase implements HttpHandler 
 
             case "POST" -> {
                 if (body.isBlank()) {
-                    sendResponse(exchange, 400, "{\"error\":\"El Body de la peticion no puede estar vacio!\"}");
+                    sendResponse(exchange, 400, errorString("El Body de la peticion no puede estar vacio!"));
                     return;
                 }
 
@@ -42,36 +42,34 @@ public class EnterpriseController extends ControllerBase implements HttpHandler 
 
                     createEnterprise(exchange, newEnterprise);
                 } catch (JsonSyntaxException e) {
-                    logger.log(Level.WARNING, "❌ Invalid input data fields on the Request Body, deserialization/parsing error. Error: " + e.getMessage(),
-                            e);
-                    sendResponse(exchange, 400, "{\"error\":\"Los datos enviados no son válidos. Revisa los campos e inténtalo de nuevo.\"}");
+                    logger.log(Level.WARNING, "❌ Invalid input data fields on the Request Body, deserialization/parsing error. Error: " + e.getMessage(), e);
+                    sendResponse(exchange, 400, errorString("Los datos enviados no son válidos. Revisa los campos e inténtalo de nuevo."));
                 }
             }
 
             default -> {
                 logger.log(Level.WARNING, "❌ Invalid Request method to /api/empresas endpoint. Method received: " + exchange.getRequestMethod());
-                sendResponse(exchange, 405, "{\"error\":\"Metodo no permitido, solo Peticiones GET y POST para el endpoint /api/empresas.\"}");
+                sendResponse(exchange, 405, errorString("Metodo no permitido, solo Peticiones GET y POST para el endpoint /api/empresas."));
             }
         }
     }
 
     private void getAllEnterprises(HttpExchange exchange) throws IOException {
         try {
-            List<EnterpriseResponse> enterpriseResponses =
-                    enterpriseService.getAllEnterprises().stream().map(this::toEnterpriseResponse).toList();
+            List<EnterpriseResponse> enterpriseResponses = enterpriseService.getAllEnterprises().stream().map(this::toEnterpriseResponse).toList();
 
             logger.info("✅ List of enterpises fetched. Total: " + enterpriseResponses.size());
 
             sendResponse(exchange, 200, JsonUtil.toJson(enterpriseResponses));
         } catch (NotFoundException e) {
             logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
-            sendResponse(exchange, NotFoundException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
+            sendResponse(exchange, NotFoundException.STATUS_CODE, errorString(e.getMessage()));
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
-            sendResponse(exchange, 500, "{\"error\":\"Error durante el acceso a Base de Datos en el servidor.\"}");
+            sendResponse(exchange, 500, errorString("Error durante el acceso a Base de Datos en el servidor."));
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
-            sendResponse(exchange, 500, "{\"error\":\"Error del servidor, intentalo mas tarde.\"}");
+            sendResponse(exchange, 500, errorString("Error del servidor, intentalo mas tarde."));
         }
     }
 
@@ -81,16 +79,16 @@ public class EnterpriseController extends ControllerBase implements HttpHandler 
 
             logger.info("✅ New Enterprise Created Successfully. Number of rows changed: " + rowsChanged);
 
-            sendResponse(exchange, 201, "{\"message\":\"Nueva Empresa creada correctamente.\"}");
+            sendResponse(exchange, 201, successMessage("Nueva Empresa creada correctamente"));
         } catch (ValidationException e) {
             logger.log(Level.WARNING, "Field Validation Error. Error: " + e.getMessage(), e);
-            sendResponse(exchange, ValidationException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
+            sendResponse(exchange, ValidationException.STATUS_CODE, errorString(e.getMessage()));
         } catch (DatabaseOperationException e) {
             logger.log(Level.WARNING, "Error during SQL Creation of new Enterprise. Error: " + e.getMessage(), e);
-            sendResponse(exchange, DatabaseOperationException.STATUS_CODE, "{\"error\":\"Error durante la insercion de datos en la BBDD del servidor.\"}");
+            sendResponse(exchange, DatabaseOperationException.STATUS_CODE, errorString("Error durante la insercion de datos en la BBDD del servidor."));
         } catch (SQLException e) {
             logger.log(Level.WARNING, "Unhandled Error during SQL Creation of new Enterprise. DB Connection error. Error: " + e.getMessage(), e);
-            sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
+            sendResponse(exchange, 500, errorString("Error de conexion con Base de Datos desde el servidor."));
         }
     }
 

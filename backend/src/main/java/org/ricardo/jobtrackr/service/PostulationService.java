@@ -60,7 +60,7 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
     public int patchPostulation(int postulationId, Map<String, Object> patchValues) throws SQLException, ValidationException, DatabaseOperationException {
         if (!validPatchFields(patchValues.keySet())) {
             logger.log(Level.WARNING, "⚠️ Fields not valid on Client request. Fields received: " + patchValues.keySet());
-            throw new ValidationException("Los Campos a modificar no son válidos. Revisa los campos e inténtalo de nuevo. Campos invalidos: " + patchValues.keySet());
+            throw new ValidationException("Los Campos a modificar no son válidos. Revisa los campos e inténtalo de nuevo. Campos recibidos: " + patchValues.keySet());
         }
 
         // Necesito que los valores de tipo BigDecimal se mapeen como BigDecimal y los Double como Int, no manejamos decimales en este caso
