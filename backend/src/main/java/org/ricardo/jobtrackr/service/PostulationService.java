@@ -1,12 +1,14 @@
 package org.ricardo.jobtrackr.service;
 
 import org.ricardo.jobtrackr.dto.CreatePostulationRequest;
+import org.ricardo.jobtrackr.dto.UpdateStatusRequest;
 import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.exceptions.NotFoundException;
 import org.ricardo.jobtrackr.exceptions.ValidationException;
 import org.ricardo.jobtrackr.interfaces.DtoMapper;
 import org.ricardo.jobtrackr.model.Postulation;
 import org.ricardo.jobtrackr.dao.PostulationDAO;
+import org.ricardo.jobtrackr.model.PostulationStatus;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -18,7 +20,7 @@ import java.util.stream.Collectors;
 public class PostulationService implements DtoMapper<Postulation, CreatePostulationRequest> {
     private static final Logger logger = Logger.getLogger(PostulationService.class.getName());
 
-    private static final Set<String> ALLOWED_PATCH_FIELDS = Set.of("postulacionId", "usuarioId", "empresaId", "rol", "estatus", "ordenKanban", "salarioMinimo",
+    private static final Set<String> ALLOWED_PATCH_FIELDS = Set.of("empresaId", "rol", "estatus", "ordenKanban", "salarioMinimo",
             "salarioMaximo", "ubicacion", "esTelematico", "ofertaUrl", "notaPostulacion", "fechaPostulacion");
 
     private final PostulationDAO postulationDAO = new PostulationDAO();
@@ -65,6 +67,18 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
         Map<String, Object[]> formattedPatchValues = formatKeys(patchValues);
 
         return postulationDAO.patchPostulation(postulationId, formattedPatchValues);
+    }
+
+    public int patchStatus(int postulationId, UpdateStatusRequest statusUpdateReq) throws SQLException, IllegalArgumentException, ValidationException, DatabaseOperationException {
+        try {
+            String statusValue = PostulationStatus.valueOf(statusUpdateReq.getEstatus()).name();
+
+            return postulationDAO.patchStatus(postulationId, statusValue);
+        } catch(NullPointerException e) {
+            throw new ValidationException("El campo 'estatus' no esta presente, peticion invalida. Revisalo e intentalo de nuevo.");
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Valor del campo 'estatus' es invalido. Revisalo e intentalo de nuevo. Valor recibido: '" + statusUpdateReq.getEstatus() + "'.");
+        }
     }
 
     private boolean validPatchFields(Set<String> keySet) {

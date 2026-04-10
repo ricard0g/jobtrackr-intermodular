@@ -6,6 +6,7 @@ import com.sun.net.httpserver.HttpHandler;
 import org.ricardo.jobtrackr.controller.base.ControllerBase;
 import org.ricardo.jobtrackr.dto.CreatePostulationRequest;
 import org.ricardo.jobtrackr.dto.PostulationResponse;
+import org.ricardo.jobtrackr.dto.UpdateStatusRequest;
 import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.exceptions.NotFoundException;
 import org.ricardo.jobtrackr.exceptions.ValidationException;
@@ -96,7 +97,17 @@ public class PostulationController extends ControllerBase implements HttpHandler
 
             case "PATCH" -> {
                 logger.info("🌐 PATCH Request to /api/postulaciones/{id} endpoint received...");
-                if (path.matches("/api/postulaciones/[0-9]+")) {
+                if (path.matches("/api/postulaciones/[0-9]+/estatus")) {
+                    try {
+                        UpdateStatusRequest statusUpdateReq = JsonUtil.fromJson(body, UpdateStatusRequest.class);
+
+                        patchStatus(exchange, statusUpdateReq, path.split("/"));
+                    } catch (JsonSyntaxException e) {
+                        logger.log(Level.WARNING, "❌ Invalid input data fields on the Request Body, deserialization/parsing error. Error: " + e.getMessage(),
+                                e);
+                        sendResponse(exchange, 400, "{\"error\":\"Los datos enviados no son válidos. Revisa los campos e inténtalo de nuevo.\"}");
+                    }
+                } else if (path.matches("/api/postulaciones/[0-9]+")) {
                     try {
                         Map<String, Object> patchValues = JsonUtil.fromJson(body, HashMap.class);
 
@@ -231,6 +242,32 @@ public class PostulationController extends ControllerBase implements HttpHandler
         }
     }
 
+    private void patchStatus(HttpExchange exchange, UpdateStatusRequest statusUpdateReq, String[] requestPathSplit) throws IOException {
+        try {
+            int postulationId = Integer.parseInt(requestPathSplit[3]);
+
+            postulationService.patchStatus(postulationId, statusUpdateReq);
+
+            sendResponse(exchange, 200, String.format("{\"message\":\"Estatus Actualizado para Postulacion con ID %d.\"}",
+                    postulationId));
+        } catch (IllegalArgumentException | ValidationException e) {
+            logger.log(Level.WARNING, "Field Validation Error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, ValidationException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
+        } catch (DatabaseOperationException e) {
+            logger.log(Level.WARNING, "Error during SQL Deletion of Postulation. Error: " + e.getMessage(), e);
+            sendResponse(exchange, DatabaseOperationException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
+        } catch (NotFoundException e) {
+            logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
+            sendResponse(exchange, NotFoundException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Unhandled Error during SQL Update of Postulation. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, "{\"error\":\"Error de conexion con Base de Datos desde el servidor.\"}");
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, "{\"error\":\"Error del servidor, intentalo mas tarde.\"}");
+        }
+    }
+
     private void patchPostulation(HttpExchange exchange, Map<String, Object> patchValues, String[] requestPathSplit) throws IOException {
         try {
             int postulationId = Integer.parseInt(requestPathSplit[requestPathSplit.length - 1]);
@@ -244,7 +281,7 @@ public class PostulationController extends ControllerBase implements HttpHandler
             sendResponse(exchange, 400, "{\"error\":\"Los datos enviados no son válidos. Revisa los campos e inténtalo de nuevo.\"}");
         } catch (ValidationException e) {
             logger.log(Level.WARNING, "Field Validation Error. Error: " + e.getMessage(), e);
-            sendResponse(exchange, 400, String.format("{\"error\":\"%s\"}", e.getMessage()));
+            sendResponse(exchange, ValidationException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
         } catch (DatabaseOperationException e) {
             logger.log(Level.WARNING, "Error during SQL Deletion of Postulation. Error: " + e.getMessage(), e);
             sendResponse(exchange, DatabaseOperationException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));

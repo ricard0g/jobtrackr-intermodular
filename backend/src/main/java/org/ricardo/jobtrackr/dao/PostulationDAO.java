@@ -1,6 +1,8 @@
 package org.ricardo.jobtrackr.dao;
 
+import com.mysql.cj.x.protobuf.MysqlxCrud;
 import org.ricardo.jobtrackr.config.DatabaseConfig;
+import org.ricardo.jobtrackr.dto.UpdateStatusRequest;
 import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.model.Postulation;
 import org.ricardo.jobtrackr.model.PostulationStatus;
@@ -154,29 +156,29 @@ public class PostulationDAO extends RowMapper<Postulation> {
                 switch ((String) values[1]) {
                     case "Integer" -> {
                         Double value = (Double) values[0];
-                        stmt.setInt(i+1, (int) value.intValue());
+                        stmt.setInt(i + 1, (int) value.intValue());
                     }
 
                     case "String" -> {
-                        stmt.setString(i+1, (String) values[0]);
+                        stmt.setString(i + 1, (String) values[0]);
                     }
 
                     case "BigDecimal" -> {
-                        stmt.setBigDecimal(i+1, (BigDecimal) values[0]);
+                        stmt.setBigDecimal(i + 1, (BigDecimal) values[0]);
                     }
 
                     case "Date" -> {
-                        stmt.setDate(i+1, (Date) Date.valueOf((String) values[0]));
+                        stmt.setDate(i + 1, (Date) Date.valueOf((String) values[0]));
                     }
 
                     case "Boolean" -> {
-                        stmt.setBoolean(i+1, (boolean) values[0]);
+                        stmt.setBoolean(i + 1, (boolean) values[0]);
                     }
                 }
 
             }
 
-            stmt.setInt(entries.size()+1, postulationId);
+            stmt.setInt(entries.size() + 1, postulationId);
 
             logger.info("✉️ Full Stmt: " + stmt);
 
@@ -207,6 +209,27 @@ public class PostulationDAO extends RowMapper<Postulation> {
         sqlBuilder.append(" WHERE p.usuario_id = 1 AND p.postulacion_id = ?");
 
         return sqlBuilder.toString();
+    }
+
+    public int patchStatus(int postulationId, String statusValue) throws SQLException, DatabaseOperationException {
+        String sql = "UPDATE postulaciones p SET p.estatus = ? WHERE p.usuario_id = 1 AND p.postulacion_id = ?";
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, statusValue);
+            stmt.setInt(2, postulationId);
+
+            int rowsChanged = stmt.executeUpdate();
+
+            if (rowsChanged == 0) {
+                logger.warning("‼️ Rows changed is '0'. Failure while Patching a Postulation. Throwing DatabaseOperationException...");
+                throw new DatabaseOperationException("Fallo actualizando el Estatus de la Postulacion con ID " + postulationId + " en la Base de" +
+                        " Datos. " +
+                        "Intentalo de nuevo mas tarde.");
+            }
+
+            logger.info("✅ Postulation Status Updated Correctly");
+
+            return rowsChanged;
+        }
     }
 
     protected Postulation mapRow(ResultSet rs) throws SQLException {
