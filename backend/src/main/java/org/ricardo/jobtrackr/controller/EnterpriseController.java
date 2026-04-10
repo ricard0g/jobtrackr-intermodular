@@ -8,6 +8,7 @@ import org.ricardo.jobtrackr.dto.CreateEnterpriseRequest;
 import org.ricardo.jobtrackr.dto.EnterpriseResponse;
 import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.exceptions.NotFoundException;
+import org.ricardo.jobtrackr.exceptions.ValidationException;
 import org.ricardo.jobtrackr.model.Enterprise;
 import org.ricardo.jobtrackr.service.EnterpriseService;
 import org.ricardo.jobtrackr.util.JsonUtil;
@@ -81,6 +82,9 @@ public class EnterpriseController extends ControllerBase implements HttpHandler 
             logger.info("✅ New Enterprise Created Successfully. Number of rows changed: " + rowsChanged);
 
             sendResponse(exchange, 201, "{\"message\":\"Nueva Empresa creada correctamente.\"}");
+        } catch (ValidationException e) {
+            logger.log(Level.WARNING, "Field Validation Error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, ValidationException.STATUS_CODE, String.format("{\"error\":\"%s\"}", e.getMessage()));
         } catch (DatabaseOperationException e) {
             logger.log(Level.WARNING, "Error during SQL Creation of new Enterprise. Error: " + e.getMessage(), e);
             sendResponse(exchange, DatabaseOperationException.STATUS_CODE, "{\"error\":\"Error durante la insercion de datos en la BBDD del servidor.\"}");

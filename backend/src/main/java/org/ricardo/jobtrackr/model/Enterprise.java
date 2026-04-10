@@ -7,7 +7,7 @@ public class Enterprise {
 
     public Enterprise() {}
 
-    public Enterprise(int empresaId, String nombreEmpresa, String logoEmpresa) {
+    public Enterprise(String nombreEmpresa, String logoEmpresa) {
         this.empresaId = empresaId;
         this.nombreEmpresa = nombreEmpresa;
         this.logoEmpresa = logoEmpresa;
