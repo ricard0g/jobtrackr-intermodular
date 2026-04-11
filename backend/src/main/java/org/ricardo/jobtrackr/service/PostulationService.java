@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class PostulationService implements DtoMapper<Postulation, CreatePostulationRequest> {
     private static final Logger logger = Logger.getLogger(PostulationService.class.getName());
 
-    private static final Set<String> ALLOWED_PATCH_FIELDS = Set.of("empresaId", "rol", "estatus", "ordenKanban", "salarioMinimo",
+    private static final Set<String> ALLOWED_PATCH_FIELDS = Set.of("empresaId", "rol", "salarioMinimo",
             "salarioMaximo", "ubicacion", "esTelematico", "ofertaUrl", "notaPostulacion", "fechaPostulacion");
 
     private final PostulationDAO postulationDAO = new PostulationDAO();
