@@ -6,11 +6,13 @@ import com.sun.net.httpserver.HttpHandler;
 import org.ricardo.jobtrackr.controller.base.ControllerBase;
 import org.ricardo.jobtrackr.dto.CreatePostulationRequest;
 import org.ricardo.jobtrackr.dto.PostulationResponse;
+import org.ricardo.jobtrackr.dto.StatusHistoryResponse;
 import org.ricardo.jobtrackr.dto.UpdateStatusRequest;
 import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.exceptions.NotFoundException;
 import org.ricardo.jobtrackr.exceptions.ValidationException;
 import org.ricardo.jobtrackr.model.Postulation;
+import org.ricardo.jobtrackr.model.StatusHistory;
 import org.ricardo.jobtrackr.service.PostulationService;
 import org.ricardo.jobtrackr.util.JsonUtil;
 
@@ -36,7 +38,9 @@ public class PostulationController extends ControllerBase implements HttpHandler
             case "GET" -> {
                 logger.info("🌐 GET Request to /api/postulaciones endpoint received...");
 
-                if (path.matches("/api/postulaciones/[0-9]+")) {
+                if (path.matches("/api/postulaciones/[0-9]+/historial")) {
+                    getStatusHistory(exchange, path.split("/"));
+                } else if (path.matches("/api/postulaciones/[0-9]+")) {
                     findPostulationById(exchange, path.split("/"));
                 } else if (path.matches("/api/postulaciones")) {
                     getAllPostulactions(exchange);
@@ -343,6 +347,33 @@ public class PostulationController extends ControllerBase implements HttpHandler
             logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, errorString("Error del servidor, intentalo mas tarde."));
         }
+    }
+
+    private void getStatusHistory(HttpExchange exchange, String[] requestPathSplit) throws IOException {
+        try {
+            int postulationId = Integer.parseInt(requestPathSplit[3]);
+
+            List<StatusHistoryResponse> statusHistoryResponseList =
+                    postulationService.getAllStatusHistory(postulationId).stream().map(this::toStatusHistoryResponse).toList();
+
+            logger.info("✅ " + statusHistoryResponseList.size() + " Status histories found");
+
+            sendResponse(exchange, 200, JsonUtil.toJson(statusHistoryResponseList));
+        } catch (NotFoundException e) {
+            logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
+            sendResponse(exchange, NotFoundException.STATUS_CODE, errorString(e.getMessage()));
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, errorString("Error de conexion con Base de Datos desde el servidor."));
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, errorString("Error del servidor, intentalo mas tarde."));
+        }
+    }
+
+    private StatusHistoryResponse toStatusHistoryResponse(StatusHistory statusHistory) {
+        return new StatusHistoryResponse(statusHistory.getEstatusId(), statusHistory.getPostulacionId(), statusHistory.getAntiguoEstatus(),
+                statusHistory.getNuevoEstatus(), statusHistory.getCambiadoEn(), statusHistory.getNotaPostulacion());
     }
 
     private PostulationResponse toPostulationResponse(Postulation postulation) {

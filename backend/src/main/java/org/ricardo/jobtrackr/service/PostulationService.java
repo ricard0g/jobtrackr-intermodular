@@ -1,5 +1,6 @@
 package org.ricardo.jobtrackr.service;
 
+import org.ricardo.jobtrackr.dao.StatusHistoryDAO;
 import org.ricardo.jobtrackr.dto.CreatePostulationRequest;
 import org.ricardo.jobtrackr.dto.UpdateStatusRequest;
 import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
@@ -9,6 +10,7 @@ import org.ricardo.jobtrackr.interfaces.DtoMapper;
 import org.ricardo.jobtrackr.model.Postulation;
 import org.ricardo.jobtrackr.dao.PostulationDAO;
 import org.ricardo.jobtrackr.model.PostulationStatus;
+import org.ricardo.jobtrackr.model.StatusHistory;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -24,6 +26,7 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
             "salarioMaximo", "ubicacion", "esTelematico", "ofertaUrl", "notaPostulacion", "fechaPostulacion");
 
     private final PostulationDAO postulationDAO = new PostulationDAO();
+    private final StatusHistoryDAO statusHistoryDAO = new StatusHistoryDAO();
 
     public List<Postulation> getAllPostulations() throws SQLException {
         return postulationDAO.getAllPostulations().orElseThrow(() -> new NotFoundException("No hay postulaciones en la Base de Datos"));
@@ -120,6 +123,10 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
         System.out.println(orderValue);
 
         return postulationDAO.patchOrder(postulationId, orderValue);
+    }
+
+    public List<StatusHistory> getAllStatusHistory(int postulationId) throws SQLException {
+        return statusHistoryDAO.getAllStatusHistory(postulationId);
     }
 
     public Postulation toModel(CreatePostulationRequest postulationReq) {

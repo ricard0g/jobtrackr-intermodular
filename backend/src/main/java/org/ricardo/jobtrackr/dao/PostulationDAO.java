@@ -6,6 +6,7 @@ import org.ricardo.jobtrackr.dto.UpdateStatusRequest;
 import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.model.Postulation;
 import org.ricardo.jobtrackr.model.PostulationStatus;
+import org.ricardo.jobtrackr.model.StatusHistory;
 
 import java.math.BigDecimal;
 import java.sql.*;
