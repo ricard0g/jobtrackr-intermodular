@@ -45,7 +45,11 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
         try {
             Postulation newPostulation = toModel(postulationReq);
 
-            return postulationDAO.createPostulation(newPostulation);
+            int newPostulationId = postulationDAO.createPostulation(newPostulation);
+
+            statusHistoryDAO.createStatusHistory(newPostulationId, newPostulation.getEstatus().name());
+
+            return newPostulationId;
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Valor del campo 'estatus' es invalido. Revisalo e intentalo de nuevo. Valor recibido: '" + postulationReq.getEstatus() +
                     "'.");
@@ -105,6 +109,8 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
             DatabaseOperationException {
         try {
             String statusValue = PostulationStatus.valueOf(statusUpdateReq.getEstatus()).name();
+
+            statusHistoryDAO.createStatusHistory(postulationId, statusValue);
 
             return postulationDAO.patchStatus(postulationId, statusValue);
         } catch (NullPointerException e) {

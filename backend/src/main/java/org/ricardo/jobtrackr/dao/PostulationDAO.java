@@ -63,7 +63,7 @@ public class PostulationDAO extends RowMapper<Postulation> {
         String sql = "INSERT INTO postulaciones (usuario_id, empresa_id, rol, estatus, orden_kanban, salario_minimo, salario_maximo, ubicacion, " +
                 "es_telematico, oferta_url, nota_postulacion, fecha_postulacion) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 
-        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, newPostulation.getUsuarioId());
             stmt.setInt(2, newPostulation.getEmpresaId());
             stmt.setString(3, newPostulation.getRol());
@@ -85,9 +85,17 @@ public class PostulationDAO extends RowMapper<Postulation> {
                 throw new DatabaseOperationException("Fallo durante la creacion de Postulacion en la Base de Datos.");
             }
 
-            logger.info("🧷 Statment executed successfulyl. Rows Changed: " + rowsChanged);
-
-            return rowsChanged;
+            // Tutorial de Oracle recomienda ser explicito en la apertura y cierre de ResultSet, por eso uso el Try-with-resource, porque cierra el ResultSEt
+            // automaticamente
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    int generatedId = generatedKeys.getInt(1);
+                    System.out.println("Generated ID: " + generatedId);
+                    return generatedId;
+                } else {
+                    throw new DatabaseOperationException("Postulacion creada correctamente pero no se puedo recuperar el ID");
+                }
+            }
         }
     }
 
