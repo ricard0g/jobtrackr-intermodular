@@ -157,6 +157,14 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
         }
     }
 
+    public Interview findInterviewById(int interviewId) throws SQLException {
+        return interviewDAO.findInterviewById(interviewId).orElseThrow(() -> new NotFoundException("No se ha encontrado ninguna entrevista con el ID: " + interviewId));
+    }
+
+    public int deleteInterview(int interviewId) throws SQLException {
+        return interviewDAO.deleteInterview(interviewId);
+    }
+
     public Interview toInterview(CreateInterviewRequest interviewRequest) {
         return new Interview(interviewRequest.getPostulacionId(), interviewRequest.getNumeroRonda(),
                 InterviewType.valueOf(interviewRequest.getTipoEntrevista().name()), LocalDateTime.parse(interviewRequest.getFechaEntrevista(),

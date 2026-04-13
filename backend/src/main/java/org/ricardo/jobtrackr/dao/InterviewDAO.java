@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 public class InterviewDAO extends RowMapper<Interview> {
@@ -38,6 +39,23 @@ public class InterviewDAO extends RowMapper<Interview> {
         }
     }
 
+    public Optional<Interview> findInterviewById(int interviewId) throws SQLException {
+        String sql = "SELECT entrevista_id, postulacion_id, numero_ronda, tipo_entrevista, fecha_entrevista, entrevistador, resultado_entrevista FROM " +
+                "entrevistas WHERE entrevista_id = ?";
+
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, interviewId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                return Optional.of(mapRow(rs));
+            }
+
+            return Optional.empty();
+        }
+    }
+
     public int createInterview(int postulationId, Interview newInterview) throws SQLException {
         String sql = "INSERT INTO entrevistas (postulacion_id, numero_ronda, tipo_entrevista, fecha_entrevista, entrevistador, resultado_entrevista) VALUES " +
                 "(?, ?, ?, ?, ?, ?)";
@@ -55,6 +73,23 @@ public class InterviewDAO extends RowMapper<Interview> {
             if (rowsChanged == 0) {
                 logger.warning("‼️ Rows changed is '0'. Failure during insertion of new Interview. Throwing DatabaseOperationException...");
                 throw new DatabaseOperationException("Fallo durante la creacion de Entrevista en la Base de Datos.");
+            }
+
+            return rowsChanged;
+        }
+    }
+
+    public int deleteInterview(int interviewId) throws SQLException {
+        String sql = "DELETE FROM entrevistas WHERE entrevista_id = ?";
+
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, interviewId);
+
+            int rowsChanged = stmt.executeUpdate();
+
+            if (rowsChanged == 0) {
+                logger.warning("‼️ Rows changed is '0'. Failure during deletion of Interview. Throwing DatabaseOperationException...");
+                throw new DatabaseOperationException("Fallo durante la eliminacion de Entrevista en la Base de Datos.");
             }
 
             return rowsChanged;

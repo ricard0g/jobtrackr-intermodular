@@ -86,6 +86,8 @@ public class PostulationController extends ControllerBase implements HttpHandler
                 logger.info("🌐 DELETE Request to /api/postulaciones/{id} endpoint received...");
                 if (path.matches("/api/postulaciones/[0-9]+")) {
                     deletePostulation(exchange, path.split("/"));
+                } else if (path.matches("/api/postulaciones/[0-9]+/entrevistas/[0-9]+")) {
+                    deleteInterview(exchange, path.split("/"));
                 } else {
                     sendResponse(exchange, 404, errorString("Este endpoint no existe. Peticion no valida."));
                 }
@@ -416,6 +418,32 @@ public class PostulationController extends ControllerBase implements HttpHandler
             sendResponse(exchange, DatabaseOperationException.STATUS_CODE, errorString(e.getMessage()));
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Interview. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, errorString("Error de Base de Datos en el servidor."));
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, errorString("Error del servidor, intentalo mas tarde."));
+        }
+    }
+
+    private void deleteInterview(HttpExchange exchange, String[] requestPathSplit) throws IOException {
+        try {
+            int interviewId = Integer.parseInt(requestPathSplit[5]);
+
+            Interview existingInterview = postulationService.findInterviewById(interviewId);
+
+            int interviewsRemoved = postulationService.deleteInterview(existingInterview.getEntrevistaId());
+
+            logger.info("✅ Interview with ID " + interviewId + " found and " + interviewsRemoved + " Interview was removed");
+
+            sendResponse(exchange, 201, successMessage("Entrevista Eliminada correctamente."));
+        } catch (NotFoundException e) {
+            logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
+            sendResponse(exchange, NotFoundException.STATUS_CODE, errorString(e.getMessage()));
+        } catch (DatabaseOperationException e) {
+            logger.log(Level.WARNING, "Error during SQL Deletion of Postulation. Error: " + e.getMessage(), e);
+            sendResponse(exchange, DatabaseOperationException.STATUS_CODE, errorString(e.getMessage()));
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Unhandled Error during SQL Deletion of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, errorString("Error de Base de Datos en el servidor."));
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
