@@ -1,5 +1,6 @@
 package org.ricardo.jobtrackr.service;
 
+import org.ricardo.jobtrackr.dao.InterviewDAO;
 import org.ricardo.jobtrackr.dao.StatusHistoryDAO;
 import org.ricardo.jobtrackr.dto.CreatePostulationRequest;
 import org.ricardo.jobtrackr.dto.UpdateStatusRequest;
@@ -7,6 +8,7 @@ import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.exceptions.NotFoundException;
 import org.ricardo.jobtrackr.exceptions.ValidationException;
 import org.ricardo.jobtrackr.interfaces.DtoMapper;
+import org.ricardo.jobtrackr.model.Interview;
 import org.ricardo.jobtrackr.model.Postulation;
 import org.ricardo.jobtrackr.dao.PostulationDAO;
 import org.ricardo.jobtrackr.model.PostulationStatus;
@@ -27,6 +29,7 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
 
     private final PostulationDAO postulationDAO = new PostulationDAO();
     private final StatusHistoryDAO statusHistoryDAO = new StatusHistoryDAO();
+    private final InterviewDAO interviewDAO = new InterviewDAO();
 
     public List<Postulation> getAllPostulations() throws SQLException {
         return postulationDAO.getAllPostulations().orElseThrow(() -> new NotFoundException("No hay postulaciones en la Base de Datos"));
@@ -135,6 +138,10 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
         return statusHistoryDAO.getAllStatusHistory(postulationId);
     }
 
+    public List<Interview> getAllInterviews(int postulationId) throws SQLException {
+        return interviewDAO.getAllInterviews(postulationId);
+    }
+
     public Postulation toModel(CreatePostulationRequest postulationReq) {
         return new Postulation(postulationReq.getUsuarioId(), postulationReq.getEmpresaId(), postulationReq.getRol(),
                 PostulationStatus.valueOf(postulationReq.getEstatus()), postulationReq.getOrdenKanban(), postulationReq.getSalarioMinimo(),
@@ -142,6 +149,4 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
                 postulationReq.getUbicacion(), postulationReq.isEsTelematico(), postulationReq.getOfertaUrl(), postulationReq.getNotaPostulacion(),
                 postulationReq.getFechaPostulacion());
     }
-
-
 }

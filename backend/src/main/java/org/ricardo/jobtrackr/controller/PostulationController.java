@@ -4,13 +4,12 @@ import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.ricardo.jobtrackr.controller.base.ControllerBase;
-import org.ricardo.jobtrackr.dto.CreatePostulationRequest;
-import org.ricardo.jobtrackr.dto.PostulationResponse;
-import org.ricardo.jobtrackr.dto.StatusHistoryResponse;
-import org.ricardo.jobtrackr.dto.UpdateStatusRequest;
+import org.ricardo.jobtrackr.dto.*;
 import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.exceptions.NotFoundException;
 import org.ricardo.jobtrackr.exceptions.ValidationException;
+import org.ricardo.jobtrackr.model.Interview;
+import org.ricardo.jobtrackr.model.InterviewType;
 import org.ricardo.jobtrackr.model.Postulation;
 import org.ricardo.jobtrackr.model.StatusHistory;
 import org.ricardo.jobtrackr.service.PostulationService;
@@ -38,12 +37,14 @@ public class PostulationController extends ControllerBase implements HttpHandler
             case "GET" -> {
                 logger.info("🌐 GET Request to /api/postulaciones endpoint received...");
 
-                if (path.matches("/api/postulaciones/[0-9]+/historial")) {
+                if (path.matches("/api/postulaciones/[0-9]+/entrevistas")) {
+                    getAllInterviews(exchange, path.split("/"));
+                } else if (path.matches("/api/postulaciones/[0-9]+/historial")) {
                     getStatusHistory(exchange, path.split("/"));
                 } else if (path.matches("/api/postulaciones/[0-9]+")) {
                     findPostulationById(exchange, path.split("/"));
                 } else if (path.matches("/api/postulaciones")) {
-                    getAllPostulactions(exchange);
+                    getAllPostulations(exchange);
                 } else {
                     sendResponse(exchange, 404, errorString("Este endpoint no existe. Peticion no valida."));
                 }
@@ -156,7 +157,7 @@ public class PostulationController extends ControllerBase implements HttpHandler
         }
     }
 
-    private void getAllPostulactions(HttpExchange exchange) throws IOException {
+    private void getAllPostulations(HttpExchange exchange) throws IOException {
         try {
             List<PostulationResponse> postulations = postulationService.getAllPostulations().stream().map(this::toPostulationResponse).toList();
 
@@ -369,6 +370,27 @@ public class PostulationController extends ControllerBase implements HttpHandler
             logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, errorString("Error del servidor, intentalo mas tarde."));
         }
+    }
+
+    private void getAllInterviews(HttpExchange exchange, String[] requestPathSplit) throws IOException {
+        try {
+            int postulationId = Integer.parseInt(requestPathSplit[3]);
+
+            List<InterviewResponse> interviewResponseList = postulationService.getAllInterviews(postulationId).stream().map(this::toInterviewResponse).toList();
+
+            sendResponse(exchange, 200, JsonUtil.toJson(interviewResponseList));
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, errorString("Error de conexion con Base de Datos desde el servidor."));
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, errorString("Error del servidor, intentalo mas tarde."));
+        }
+    }
+
+    private InterviewResponse toInterviewResponse(Interview interview) {
+        return new InterviewResponse(interview.getEntrevistaId(), interview.getPostulacionId(), interview.getNumeroRonda(),
+                interview.getTipoEntrevista(), interview.getFechaEntrevista(), interview.getEntrevistador(), interview.getResultadoEntrevista());
     }
 
     private StatusHistoryResponse toStatusHistoryResponse(StatusHistory statusHistory) {
