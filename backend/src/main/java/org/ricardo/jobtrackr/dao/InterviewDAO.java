@@ -96,6 +96,29 @@ public class InterviewDAO extends RowMapper<Interview> {
         }
     }
 
+    public int updateInterview(Interview updatedInterview) throws SQLException {
+        String sql = "UPDATE entrevistas SET numero_ronda = ?, tipo_entrevista = ?, fecha_entrevista = ?, entrevistador = ?, resultado_entrevista = ? WHERE " +
+                "entrevista_id = ?";
+
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, updatedInterview.getNumeroRonda());
+            stmt.setString(2, updatedInterview.getTipoEntrevista().name());
+            stmt.setString(3, updatedInterview.getFechaEntrevista().toString());
+            stmt.setString(4, updatedInterview.getEntrevistador());
+            stmt.setString(5, updatedInterview.getResultadoEntrevista().name());
+            stmt.setInt(6, updatedInterview.getEntrevistaId());
+
+            int rowsChanged = stmt.executeUpdate();
+
+            if (rowsChanged == 0) {
+                logger.warning("‼️ Rows changed is '0'. Failure during Update of Interview. Throwing DatabaseOperationException...");
+                throw new DatabaseOperationException("Fallo durante la actualizacion de Entrevista en la Base de Datos.");
+            }
+
+            return rowsChanged;
+        }
+    }
+
     @Override
     protected Interview mapRow(ResultSet rs) throws SQLException {
         return new Interview(rs.getInt("entrevista_id"), rs.getInt("postulacion_id"), rs.getInt("numero_ronda"), InterviewType.valueOf(rs.getString(

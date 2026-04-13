@@ -60,4 +60,8 @@ public class Interview {
     public InterviewResult getResultadoEntrevista() {
         return resultadoEntrevista;
     }
+
+    public void setEntrevistaId(int entrevistaId) {
+        this.entrevistaId = entrevistaId;
+    }
 }

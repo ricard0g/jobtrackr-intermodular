@@ -111,6 +111,16 @@ public class PostulationController extends ControllerBase implements HttpHandler
                                 e);
                         sendResponse(exchange, 400, errorString("Los datos enviados no son válidos. Revisa los campos e inténtalo de nuevo."));
                     }
+                } else if (path.matches("/api/postulaciones/[0-9]+/entrevistas/[0-9]+")) {
+                    try {
+                        CreateInterviewRequest interviewRequest = JsonUtil.fromJson(body, CreateInterviewRequest.class);
+
+                        updateInterview(exchange, interviewRequest, path.split("/"));
+                    } catch (JsonSyntaxException e) {
+                        logger.log(Level.WARNING, "❌ Invalid input data fields on the Request Body, deserialization/parsing error. Error: " + e.getMessage(),
+                                e);
+                        sendResponse(exchange, 400, errorString("Los datos enviados no son válidos. Revisa los campos e inténtalo de nuevo."));
+                    }
                 } else {
                     sendResponse(exchange, 404, errorString("Este endpoint no existe. Peticion no valida."));
                 }
@@ -444,6 +454,35 @@ public class PostulationController extends ControllerBase implements HttpHandler
             sendResponse(exchange, DatabaseOperationException.STATUS_CODE, errorString(e.getMessage()));
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Unhandled Error during SQL Deletion of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, errorString("Error de Base de Datos en el servidor."));
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, errorString("Error del servidor, intentalo mas tarde."));
+        }
+    }
+
+    private void updateInterview(HttpExchange exchange, CreateInterviewRequest interviewRequest, String[] requestPathSplit) throws IOException {
+        try {
+            int interviewId = Integer.parseInt(requestPathSplit[5]);
+
+            Interview existingInterview = postulationService.findInterviewById(interviewId);
+
+            int interviewsUpdated = postulationService.updateInterview(existingInterview.getEntrevistaId(), interviewRequest);
+
+            logger.info("✅ " + interviewsUpdated + " Interviews Updated Successfully");
+
+            sendResponse(exchange, 201, successMessage("Entrevista con ID " + existingInterview.getEntrevistaId() + " Actualizada correctamente."));
+        } catch (ValidationException e) {
+            logger.log(Level.WARNING, "Field Validation Error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, ValidationException.STATUS_CODE, errorString(e.getMessage()));
+        } catch (DatabaseOperationException e) {
+            logger.log(Level.WARNING, "Error during SQL Update of Postulation. Error: " + e.getMessage(), e);
+            sendResponse(exchange, DatabaseOperationException.STATUS_CODE, errorString(e.getMessage()));
+        } catch (NotFoundException e) {
+            logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
+            sendResponse(exchange, NotFoundException.STATUS_CODE, errorString(e.getMessage()));
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Unhandled Error during SQL Update of Postulation. DB Connection error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, errorString("Error de Base de Datos en el servidor."));
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
