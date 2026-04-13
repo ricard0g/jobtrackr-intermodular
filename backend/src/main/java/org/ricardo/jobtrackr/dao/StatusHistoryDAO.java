@@ -69,7 +69,11 @@ public class StatusHistoryDAO extends RowMapper<StatusHistory> {
 
             String sql = "INSERT INTO historial_estatus (postulacion_id, antiguo_estatus, nuevo_estatus) VALUES (?, ?, ?)";
 
-            try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement getOldStatusStmt = conn.prepareStatement(oldStatusSql); PreparedStatement stmt
+            // ResultSet.TYPE_SCROLL_INSENSITIVE -> Permite mover el cursor del ResultSet libremente por los registros y no es sensible a mutaciones en el
+            // ResultSet subyacente
+            // ResultSet.CONCUR_READ_ONLY -> Establece que la concurrencia en el acceso de los datos no permite hacer mutaciones en el ResultSet
+            try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement getOldStatusStmt = conn.prepareStatement(oldStatusSql,
+                    ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY); PreparedStatement stmt
                     = conn.prepareStatement(sql)) {
                 getOldStatusStmt.setInt(1, postulationId);
 
@@ -77,12 +81,12 @@ public class StatusHistoryDAO extends RowMapper<StatusHistory> {
 
                 ResultSet rsOldStatus = getOldStatusStmt.executeQuery();
 
-                if (rsOldStatus.next()) {
+                if (rsOldStatus.last()) {
                     PostulationStatus oldStatus = PostulationStatus.valueOf(rsOldStatus.getString("nuevo_estatus"));
                     System.out.println(oldStatus);
 
                     stmt.setInt(1, postulationId);
-                    stmt.setString(2, oldStatusSql);
+                    stmt.setString(2, oldStatus.name());
                     stmt.setString(3, newStatus);
 
                     System.out.println(stmt);
