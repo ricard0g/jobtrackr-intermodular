@@ -14,6 +14,15 @@ public class Interview {
     public Interview() {
     }
 
+    public Interview(int postulacionId, int numeroRonda, InterviewType tipoEntrevista, LocalDateTime fechaEntrevista, String entrevistador, InterviewResult resultadoEntrevista) {
+        this.postulacionId = postulacionId;
+        this.numeroRonda = numeroRonda;
+        this.tipoEntrevista = tipoEntrevista;
+        this.fechaEntrevista = fechaEntrevista;
+        this.entrevistador = entrevistador;
+        this.resultadoEntrevista = resultadoEntrevista;
+    }
+
     public Interview(int entrevistaId, int postulacionId, int numeroRonda, InterviewType tipoEntrevista, LocalDateTime fechaEntrevista, String entrevistador, InterviewResult resultadoEntrevista) {
         this.entrevistaId = entrevistaId;
         this.postulacionId = postulacionId;

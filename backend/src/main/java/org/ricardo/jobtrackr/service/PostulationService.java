@@ -2,20 +2,20 @@ package org.ricardo.jobtrackr.service;
 
 import org.ricardo.jobtrackr.dao.InterviewDAO;
 import org.ricardo.jobtrackr.dao.StatusHistoryDAO;
+import org.ricardo.jobtrackr.dto.CreateInterviewRequest;
 import org.ricardo.jobtrackr.dto.CreatePostulationRequest;
 import org.ricardo.jobtrackr.dto.UpdateStatusRequest;
 import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.exceptions.NotFoundException;
 import org.ricardo.jobtrackr.exceptions.ValidationException;
 import org.ricardo.jobtrackr.interfaces.DtoMapper;
-import org.ricardo.jobtrackr.model.Interview;
-import org.ricardo.jobtrackr.model.Postulation;
+import org.ricardo.jobtrackr.model.*;
 import org.ricardo.jobtrackr.dao.PostulationDAO;
-import org.ricardo.jobtrackr.model.PostulationStatus;
-import org.ricardo.jobtrackr.model.StatusHistory;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,8 +24,8 @@ import java.util.stream.Collectors;
 public class PostulationService implements DtoMapper<Postulation, CreatePostulationRequest> {
     private static final Logger logger = Logger.getLogger(PostulationService.class.getName());
 
-    private static final Set<String> ALLOWED_PATCH_FIELDS = Set.of("empresaId", "rol", "salarioMinimo",
-            "salarioMaximo", "ubicacion", "esTelematico", "ofertaUrl", "notaPostulacion", "fechaPostulacion");
+    private static final Set<String> ALLOWED_PATCH_FIELDS = Set.of("empresaId", "rol", "salarioMinimo", "salarioMaximo", "ubicacion", "esTelematico",
+            "ofertaUrl", "notaPostulacion", "fechaPostulacion");
 
     private final PostulationDAO postulationDAO = new PostulationDAO();
     private final StatusHistoryDAO statusHistoryDAO = new StatusHistoryDAO();
@@ -36,15 +36,15 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
     }
 
     public Postulation findPostulationById(int postulationId) throws SQLException {
-        return postulationDAO.findPostulationById(postulationId).orElseThrow(() -> new NotFoundException("No se ha encontrado Postulacion con" +
-                " ID: " + postulationId));
+        return postulationDAO.findPostulationById(postulationId).orElseThrow(() -> new NotFoundException("No se ha encontrado Postulacion con" + " ID: " + postulationId));
     }
 
     public int deletePostulation(int postulationId) throws SQLException {
         return postulationDAO.deletePostulation(postulationId);
     }
 
-    public int createPostulation(CreatePostulationRequest postulationReq) throws SQLException, DatabaseOperationException, IllegalArgumentException, ValidationException {
+    public int createPostulation(CreatePostulationRequest postulationReq) throws SQLException, DatabaseOperationException, IllegalArgumentException,
+            ValidationException {
         try {
             Postulation newPostulation = toModel(postulationReq);
 
@@ -54,9 +54,8 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
 
             return newPostulationId;
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Valor del campo 'estatus' es invalido. Revisalo e intentalo de nuevo. Valor recibido: '" + postulationReq.getEstatus() +
-                    "'.");
-        } catch(NullPointerException e) {
+            throw new IllegalArgumentException("Valor del campo 'estatus' es invalido. Revisalo e intentalo de nuevo. Valor recibido: '" + postulationReq.getEstatus() + "'.");
+        } catch (NullPointerException e) {
             throw new ValidationException("El campo 'estatus' no esta presente, peticion invalida. Revisalo e intentalo de nuevo.");
         }
     }
@@ -124,8 +123,8 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
     }
 
     public int patchOrder(int postulationId, Map<String, Double> updateOrderReq) throws SQLException, ValidationException, ClassCastException {
-        if(!updateOrderReq.containsKey("ordenKanban")) throw new ValidationException("El campo 'ordenKanban' no esta presente, peticion invalida. Reivsalo e " +
-                "intentalo de nuevo");
+        if (!updateOrderReq.containsKey("ordenKanban"))
+            throw new ValidationException("El campo 'ordenKanban' no esta presente, peticion invalida. Reivsalo e " + "intentalo de nuevo");
 
         int orderValue = updateOrderReq.get("ordenKanban").intValue();
 
@@ -142,11 +141,33 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
         return interviewDAO.getAllInterviews(postulationId);
     }
 
+    public int createInterview(int postulationId, CreateInterviewRequest interviewRequest) throws SQLException, DatabaseOperationException,
+            IllegalArgumentException {
+        if (interviewRequest.getPostulacionId() == 0 || interviewRequest.getNumeroRonda() == 0 || interviewRequest.getTipoEntrevista() == null || interviewRequest.getFechaEntrevista().isBlank() || interviewRequest.getEntrevistador().isBlank() || interviewRequest.getResultadoEntrevista() == null) {
+            logger.log(Level.WARNING, "⚠️ Fields not valid on Client request.");
+            throw new ValidationException("Los Campos a modificar no son válidos. Revisa los campos e inténtalo de nuevo.");
+        }
+
+        try {
+            Interview newInterview = toInterview(interviewRequest);
+
+            return interviewDAO.createInterview(postulationId, newInterview);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Los valores de uno o varios de los campos son invalidos. Revisalos e intentalo de nuevo.");
+        }
+    }
+
+    public Interview toInterview(CreateInterviewRequest interviewRequest) {
+        return new Interview(interviewRequest.getPostulacionId(), interviewRequest.getNumeroRonda(),
+                InterviewType.valueOf(interviewRequest.getTipoEntrevista().name()), LocalDateTime.parse(interviewRequest.getFechaEntrevista(),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), interviewRequest.getEntrevistador(),
+                InterviewResult.valueOf(interviewRequest.getResultadoEntrevista().name()));
+    }
+
     public Postulation toModel(CreatePostulationRequest postulationReq) {
         return new Postulation(postulationReq.getUsuarioId(), postulationReq.getEmpresaId(), postulationReq.getRol(),
                 PostulationStatus.valueOf(postulationReq.getEstatus()), postulationReq.getOrdenKanban(), postulationReq.getSalarioMinimo(),
-                postulationReq.getSalarioMaximo(),
-                postulationReq.getUbicacion(), postulationReq.isEsTelematico(), postulationReq.getOfertaUrl(), postulationReq.getNotaPostulacion(),
-                postulationReq.getFechaPostulacion());
+                postulationReq.getSalarioMaximo(), postulationReq.getUbicacion(), postulationReq.isEsTelematico(), postulationReq.getOfertaUrl(),
+                postulationReq.getNotaPostulacion(), postulationReq.getFechaPostulacion());
     }
 }

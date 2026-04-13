@@ -9,7 +9,6 @@ import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.exceptions.NotFoundException;
 import org.ricardo.jobtrackr.exceptions.ValidationException;
 import org.ricardo.jobtrackr.model.Interview;
-import org.ricardo.jobtrackr.model.InterviewType;
 import org.ricardo.jobtrackr.model.Postulation;
 import org.ricardo.jobtrackr.model.StatusHistory;
 import org.ricardo.jobtrackr.service.PostulationService;
@@ -58,7 +57,17 @@ public class PostulationController extends ControllerBase implements HttpHandler
                     return;
                 }
 
-                if (path.matches("/api/postulaciones")) {
+                if (path.matches("/api/postulaciones/[0-9]+/entrevistas")) {
+                    try {
+                        CreateInterviewRequest interviewRequest = JsonUtil.fromJson(body, CreateInterviewRequest.class);
+
+                        createInterview(exchange, interviewRequest, path.split("/"));
+                    } catch (JsonSyntaxException e) {
+                        logger.log(Level.WARNING, "❌ Invalid input data fields on the Request Body, deserialization/parsing error. Error: " + e.getMessage(),
+                                e);
+                        sendResponse(exchange, 400, errorString("Los datos enviados no son válidos. Revisa los campos e inténtalo de nuevo."));
+                    }
+                } else if (path.matches("/api/postulaciones")) {
                     try {
                         CreatePostulationRequest postulationRequest = JsonUtil.fromJson(body, CreatePostulationRequest.class);
 
@@ -169,7 +178,7 @@ public class PostulationController extends ControllerBase implements HttpHandler
             sendResponse(exchange, NotFoundException.STATUS_CODE, errorString(e.getMessage()));
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
-            sendResponse(exchange, 500, errorString("Error de conexion con Base de Datos desde el servidor."));
+            sendResponse(exchange, 500, errorString("Error de Base de Datos en el servidor."));
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, errorString("Error del servidor, intentalo mas tarde."));
@@ -190,7 +199,7 @@ public class PostulationController extends ControllerBase implements HttpHandler
             sendResponse(exchange, NotFoundException.STATUS_CODE, errorString(e.getMessage()));
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Unhandled Error during SQL the Extraction of Postulation. DB Connection error. Error: " + e.getMessage(), e);
-            sendResponse(exchange, 500, errorString("Error de conexion con Base de Datos desde el servidor."));
+            sendResponse(exchange, 500, errorString("Error de Base de Datos en el servidor."));
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, errorString("Error del servidor, intentalo mas tarde."));
@@ -212,7 +221,7 @@ public class PostulationController extends ControllerBase implements HttpHandler
             sendResponse(exchange, DatabaseOperationException.STATUS_CODE, errorString(e.getMessage()));
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
-            sendResponse(exchange, 500, errorString("Error de conexion con Base de Datos desde el servidor."));
+            sendResponse(exchange, 500, errorString("Error de Base de Datos en el servidor."));
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, errorString("Error del servidor, intentalo mas tarde."));
@@ -238,8 +247,8 @@ public class PostulationController extends ControllerBase implements HttpHandler
             logger.log(Level.WARNING, "Error during SQL Deletion of Postulation. Error: " + e.getMessage(), e);
             sendResponse(exchange, DatabaseOperationException.STATUS_CODE, errorString(e.getMessage()));
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
-            sendResponse(exchange, 500, errorString("Error de conexion con Base de Datos desde el servidor."));
+            logger.log(Level.SEVERE, "Unhandled Error during SQL Deletion of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, errorString("Error de Base de Datos en el servidor."));
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, errorString("Error del servidor, intentalo mas tarde."));
@@ -265,7 +274,7 @@ public class PostulationController extends ControllerBase implements HttpHandler
             sendResponse(exchange, NotFoundException.STATUS_CODE, errorString(e.getMessage()));
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Unhandled Error during SQL Update of Postulation. DB Connection error. Error: " + e.getMessage(), e);
-            sendResponse(exchange, 500, errorString("Error de conexion con Base de Datos desde el servidor."));
+            sendResponse(exchange, 500, errorString("Error de Base de Datos en el servidor."));
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, errorString("Error del servidor, intentalo mas tarde."));
@@ -287,14 +296,14 @@ public class PostulationController extends ControllerBase implements HttpHandler
             logger.log(Level.WARNING, "Field Validation Error. Error: " + e.getMessage(), e);
             sendResponse(exchange, ValidationException.STATUS_CODE, errorString(e.getMessage()));
         } catch (DatabaseOperationException e) {
-            logger.log(Level.WARNING, "Error during SQL Deletion of Postulation. Error: " + e.getMessage(), e);
+            logger.log(Level.WARNING, "Error during SQL Patch of Postulation. Error: " + e.getMessage(), e);
             sendResponse(exchange, DatabaseOperationException.STATUS_CODE, errorString(e.getMessage()));
         } catch (NotFoundException e) {
             logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
             sendResponse(exchange, NotFoundException.STATUS_CODE, errorString(e.getMessage()));
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Unhandled Error during SQL Update of Postulation. DB Connection error. Error: " + e.getMessage(), e);
-            sendResponse(exchange, 500, errorString("Error de conexion con Base de Datos desde el servidor."));
+            logger.log(Level.SEVERE, "Unhandled Error during SQL Patch of Postulation. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, errorString("Error de Base de Datos en el servidor."));
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, errorString("Error del servidor, intentalo mas tarde."));
@@ -317,8 +326,8 @@ public class PostulationController extends ControllerBase implements HttpHandler
             sendResponse(exchange, 400, errorString("Los datos enviados no son válidos, Orden Kanban debe ser un numero. Revisa los campos e inténtalo de " +
                     "nuevo."));
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Unhandled Error during SQL Update of Postulation. DB Connection error. Error: " + e.getMessage(), e);
-            sendResponse(exchange, 500, errorString("Error de conexion con Base de Datos desde el servidor."));
+            logger.log(Level.SEVERE, "Unhandled Error during SQL Patch of Order of Postulation. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, errorString("Error de Base de Datos en el servidor."));
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, errorString("Error del servidor, intentalo mas tarde."));
@@ -336,14 +345,14 @@ public class PostulationController extends ControllerBase implements HttpHandler
             logger.log(Level.WARNING, "Field Validation Error. Error: " + e.getMessage(), e);
             sendResponse(exchange, ValidationException.STATUS_CODE, errorString(e.getMessage()));
         } catch (DatabaseOperationException e) {
-            logger.log(Level.WARNING, "Error during SQL Deletion of Postulation. Error: " + e.getMessage(), e);
+            logger.log(Level.WARNING, "Error during SQL Patch of Status. Error: " + e.getMessage(), e);
             sendResponse(exchange, DatabaseOperationException.STATUS_CODE, errorString(e.getMessage()));
         } catch (NotFoundException e) {
             logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
             sendResponse(exchange, NotFoundException.STATUS_CODE, errorString(e.getMessage()));
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Unhandled Error during SQL Update of Postulation. DB Connection error. Error: " + e.getMessage(), e);
-            sendResponse(exchange, 500, errorString("Error de conexion con Base de Datos desde el servidor."));
+            logger.log(Level.SEVERE, "Unhandled Error during SQL Patch of Status of a Postulation. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, errorString("Error de Base de Datos en el servidor."));
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, errorString("Error del servidor, intentalo mas tarde."));
@@ -364,8 +373,8 @@ public class PostulationController extends ControllerBase implements HttpHandler
             logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
             sendResponse(exchange, NotFoundException.STATUS_CODE, errorString(e.getMessage()));
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
-            sendResponse(exchange, 500, errorString("Error de conexion con Base de Datos desde el servidor."));
+            logger.log(Level.SEVERE, "Unhandled Error during SQL fetching of Status History. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, errorString("Error de Base de Datos en el servidor."));
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, errorString("Error del servidor, intentalo mas tarde."));
@@ -378,10 +387,36 @@ public class PostulationController extends ControllerBase implements HttpHandler
 
             List<InterviewResponse> interviewResponseList = postulationService.getAllInterviews(postulationId).stream().map(this::toInterviewResponse).toList();
 
+            logger.info("✅ List of interview fetched successfully. Number of Interviews Fetched: " + interviewResponseList.size());
+
             sendResponse(exchange, 200, JsonUtil.toJson(interviewResponseList));
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Postulation. DB Connection error. Error: " + e.getMessage(), e);
-            sendResponse(exchange, 500, errorString("Error de conexion con Base de Datos desde el servidor."));
+            logger.log(Level.SEVERE, "Unhandled Error during SQL Fetching of Interviews. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, errorString("Error de Base de Datos en el servidor."));
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, errorString("Error del servidor, intentalo mas tarde."));
+        }
+    }
+
+    private void createInterview(HttpExchange exchange, CreateInterviewRequest interviewRequest, String[] requestPathSplit) throws IOException {
+        try {
+            int postulationId = Integer.parseInt(requestPathSplit[3]);
+
+            int interviewsCreated = postulationService.createInterview(postulationId, interviewRequest);
+
+            logger.info("✅ New Interview Created Successfully. Number of rows changed: " + interviewsCreated);
+
+            sendResponse(exchange, 201, successMessage("Nueva entrevista creada correctamente"));
+        } catch (IllegalArgumentException | ValidationException e) {
+            logger.log(Level.WARNING, "Field Validation Error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, ValidationException.STATUS_CODE, errorString(e.getMessage()));
+        } catch (DatabaseOperationException e) {
+            logger.log(Level.WARNING, "Error during SQL Creation of new Interview. Error: " + e.getMessage(), e);
+            sendResponse(exchange, DatabaseOperationException.STATUS_CODE, errorString(e.getMessage()));
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Unhandled Error during SQL Creation of new Interview. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, errorString("Error de Base de Datos en el servidor."));
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, errorString("Error del servidor, intentalo mas tarde."));
