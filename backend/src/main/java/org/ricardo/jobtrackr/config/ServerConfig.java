@@ -3,6 +3,7 @@ package org.ricardo.jobtrackr.config;
 import com.sun.net.httpserver.HttpServer;
 import org.ricardo.jobtrackr.controller.EnterpriseController;
 import org.ricardo.jobtrackr.controller.PostulationController;
+import org.ricardo.jobtrackr.controller.TagController;
 import org.ricardo.jobtrackr.controller.UserController;
 
 import java.io.IOException;
@@ -34,5 +35,6 @@ public class ServerConfig {
         server.createContext("/api/usuario", new UserController());
         server.createContext("/api/empresas", new EnterpriseController());
         server.createContext("/api/postulaciones", new PostulationController());
+        server.createContext("/api/etiquetas", new TagController());
     }
 }
