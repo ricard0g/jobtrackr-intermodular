@@ -8,13 +8,12 @@ import org.ricardo.jobtrackr.dto.*;
 import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.exceptions.NotFoundException;
 import org.ricardo.jobtrackr.exceptions.ValidationException;
-import org.ricardo.jobtrackr.model.Interview;
-import org.ricardo.jobtrackr.model.Postulation;
-import org.ricardo.jobtrackr.model.StatusHistory;
+import org.ricardo.jobtrackr.model.*;
 import org.ricardo.jobtrackr.service.PostulationService;
 import org.ricardo.jobtrackr.util.JsonUtil;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
@@ -116,6 +115,16 @@ public class PostulationController extends ControllerBase implements HttpHandler
                         CreateInterviewRequest interviewRequest = JsonUtil.fromJson(body, CreateInterviewRequest.class);
 
                         updateInterview(exchange, interviewRequest, path.split("/"));
+                    } catch (JsonSyntaxException e) {
+                        logger.log(Level.WARNING, "❌ Invalid input data fields on the Request Body, deserialization/parsing error. Error: " + e.getMessage(),
+                                e);
+                        sendResponse(exchange, 400, errorString("Los datos enviados no son válidos. Revisa los campos e inténtalo de nuevo."));
+                    }
+                } else if (path.matches("/api/postulaciones/[0-9]+/etiquetas")) {
+                    try {
+                        int[] tagIds = JsonUtil.fromJson(body, int[].class);
+
+                        updateTags(exchange, tagIds, path.split("/"));
                     } catch (JsonSyntaxException e) {
                         logger.log(Level.WARNING, "❌ Invalid input data fields on the Request Body, deserialization/parsing error. Error: " + e.getMessage(),
                                 e);
@@ -481,6 +490,24 @@ public class PostulationController extends ControllerBase implements HttpHandler
         } catch (NotFoundException e) {
             logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
             sendResponse(exchange, NotFoundException.STATUS_CODE, errorString(e.getMessage()));
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Unhandled Error during SQL Update of Postulation. DB Connection error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, errorString("Error de Base de Datos en el servidor."));
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Unhandled error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, 500, errorString("Error del servidor, intentalo mas tarde."));
+        }
+    }
+
+    private void updateTags(HttpExchange exchange, int[] tagIds, String[] requestPathSplit) throws IOException {
+        try {
+            int postulationId = Integer.parseInt(requestPathSplit[3]);
+
+            int updatedTags = postulationService.updateTags(postulationId, tagIds);
+
+            logger.info("✅ " + updatedTags + " Tags were updated successfully");
+
+            sendResponse(exchange, 200, successMessage(updatedTags + " Etiquetas actualizadas correctamente"));
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Unhandled Error during SQL Update of Postulation. DB Connection error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, errorString("Error de Base de Datos en el servidor."));

@@ -165,7 +165,7 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
         return interviewDAO.deleteInterview(interviewId);
     }
 
-    public int updateInterview(int interviewId, CreateInterviewRequest interviewRequest) throws SQLException, DatabaseOperationException,ValidationException {
+    public int updateInterview(int interviewId, CreateInterviewRequest interviewRequest) throws SQLException, DatabaseOperationException, ValidationException {
         if (interviewRequest.getPostulacionId() == 0 || interviewRequest.getNumeroRonda() == 0 || interviewRequest.getTipoEntrevista() == null || interviewRequest.getFechaEntrevista().isBlank() || interviewRequest.getEntrevistador().isBlank() || interviewRequest.getResultadoEntrevista() == null) {
             logger.log(Level.WARNING, "⚠️ Fields not valid on Client request.");
             throw new ValidationException("Los Campos a modificar no son válidos. Revisa los campos y valores que has pasado e inténtalo de nuevo.");
@@ -177,7 +177,21 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
         return interviewDAO.updateInterview(updatedInterview);
     }
 
-    public Interview toInterview(CreateInterviewRequest interviewRequest) {
+    public int updateTags(int postulationId, int[] tagIds) throws SQLException {
+        List<PostulationTag> postulationTagList = new ArrayList<>();
+
+        for (int tagId : tagIds) {
+            postulationTagList.add(toPostulationTag(postulationId, tagId));
+        }
+
+        return postulationDAO.updateTags(postulationTagList);
+    }
+
+    private PostulationTag toPostulationTag(int postulationId, int tagId) {
+        return new PostulationTag(postulationId, tagId);
+    }
+
+    private Interview toInterview(CreateInterviewRequest interviewRequest) {
         return new Interview(interviewRequest.getPostulacionId(), interviewRequest.getNumeroRonda(),
                 InterviewType.valueOf(interviewRequest.getTipoEntrevista().name()), LocalDateTime.parse(interviewRequest.getFechaEntrevista(),
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), interviewRequest.getEntrevistador(),

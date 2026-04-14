@@ -4,10 +4,7 @@ import com.mysql.cj.x.protobuf.MysqlxCrud;
 import org.ricardo.jobtrackr.config.DatabaseConfig;
 import org.ricardo.jobtrackr.dto.UpdateStatusRequest;
 import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
-import org.ricardo.jobtrackr.model.Postulation;
-import org.ricardo.jobtrackr.model.PostulationStatus;
-import org.ricardo.jobtrackr.model.StatusHistory;
-import org.ricardo.jobtrackr.model.Tag;
+import org.ricardo.jobtrackr.model.*;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -281,6 +278,63 @@ public class PostulationDAO extends RowMapper<Postulation> {
             logger.info("✅ Postulation Status Updated Correctly");
 
             return rowsChanged;
+        }
+    }
+
+    public int updateTags(List<PostulationTag> postulationTagList) throws SQLException {
+        String deleteSql = "DELETE FROM postulaciones_etiquetas WHERE postulacion_id = ?";
+
+        StringBuilder insertSqlBuilder = new StringBuilder("INSERT INTO postulaciones_etiquetas (postulacion_id, etiqueta_id) VALUES ");
+        for (int i = 0; i < postulationTagList.size(); i++) {
+            insertSqlBuilder.append((i == postulationTagList.size() - 1) ? "(?, ?)" : "(?, ?), ");
+        }
+
+        String insertSql = insertSqlBuilder.toString();
+
+        try (Connection conn = DatabaseConfig.getConnection()) {
+            // Iniciamos transaccion para asegurarnos de mantener Integridad de Datos y que todas las operaciones salen bien
+            // TRANSACTION_READ_COMMITTED --> Establece el Lock del DBMS para no permitir que los datos que se estan usando en la transaccion sean accedidos
+            // por otras operaciones para evitar incosistencias. Detallado en el Tutorial JDBC de Oracle (https://docs.oracle.com/javase/tutorial/jdbc/basics/transactions.html)
+            boolean originalAutoCommit = conn.getAutoCommit();
+            int originalTransactionIsolation = conn.getTransactionIsolation();
+
+            conn.setAutoCommit(false);
+            conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+
+            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql); PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                deleteStmt.setInt(1, postulationTagList.getFirst().getPostulacionId());
+
+                int deletedRows = deleteStmt.executeUpdate();
+
+                logger.info("🪏 " + deletedRows + " Tags Deleted during transaction");
+
+                int currentInputIdx = 1;
+                int currentPostulationTagIdx = 0;
+                while (currentPostulationTagIdx < postulationTagList.size()) {
+                    if (currentInputIdx % 2 != 0) {
+                        insertStmt.setInt(currentInputIdx, postulationTagList.get(currentPostulationTagIdx).getPostulacionId());
+                        currentInputIdx++;
+                    } else {
+                        insertStmt.setInt(currentInputIdx, postulationTagList.get(currentPostulationTagIdx).getEtiquetaId());
+                        currentInputIdx++;
+                        currentPostulationTagIdx++;
+                    }
+                }
+
+                int insertedRows = insertStmt.executeUpdate();
+
+                logger.info("✍🏽 " + insertedRows + " Tags Added to Postulation");
+
+                conn.commit();
+                return insertedRows;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setTransactionIsolation(originalTransactionIsolation);
+                conn.setAutoCommit(originalAutoCommit);
+            }
+
         }
     }
 
