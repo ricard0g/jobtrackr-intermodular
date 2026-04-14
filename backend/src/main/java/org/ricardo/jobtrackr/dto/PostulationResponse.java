@@ -1,10 +1,12 @@
 package org.ricardo.jobtrackr.dto;
 
 import org.ricardo.jobtrackr.model.PostulationStatus;
+import org.ricardo.jobtrackr.model.Tag;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record PostulationResponse(
         int postulacionId,
@@ -21,6 +23,7 @@ public record PostulationResponse(
         LocalDateTime creadaEn,
         LocalDateTime actualizadaEn,
         String notaPostulacion,
-        LocalDate fechaPostulacion
+        LocalDate fechaPostulacion,
+        List<Tag> tagList
 ) {
 }

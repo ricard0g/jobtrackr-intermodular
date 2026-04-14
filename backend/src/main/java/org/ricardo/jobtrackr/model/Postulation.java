@@ -3,6 +3,7 @@ package org.ricardo.jobtrackr.model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class Postulation {
     private int postulacionId;
@@ -20,6 +21,7 @@ public class Postulation {
     private LocalDateTime actualizadaEn;
     private String notaPostulacion;
     private LocalDate fechaPostulacion;
+    private List<Tag> listaEtiquetas;
 
     public Postulation() {}
 
@@ -174,5 +176,13 @@ public class Postulation {
 
     public void setFechaPostulacion(LocalDate fechaPostulacion) {
         this.fechaPostulacion = fechaPostulacion;
+    }
+
+    public List<Tag> getListaEtiquetas() {
+        return listaEtiquetas;
+    }
+
+    public void setListaEtiquetas(List<Tag> listaEtiquetas) {
+        this.listaEtiquetas = listaEtiquetas;
     }
 }

@@ -7,6 +7,7 @@ import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.model.Postulation;
 import org.ricardo.jobtrackr.model.PostulationStatus;
 import org.ricardo.jobtrackr.model.StatusHistory;
+import org.ricardo.jobtrackr.model.Tag;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -21,9 +22,22 @@ public class PostulationDAO extends RowMapper<Postulation> {
     private static final Logger logger = Logger.getLogger(PostulationDAO.class.getName());
 
     public Optional<List<Postulation>> getAllPostulations() throws SQLException {
-        String sql = "SELECT postulacion_id, usuario_id, empresa_id, rol, estatus, orden_kanban, salario_minimo, salario_maximo, ubicacion, es_telematico, " +
-                "oferta_url, creada_en, actualizada_en, nota_postulacion, fecha_postulacion FROM postulaciones p WHERE p.usuario_id = (SELECT usuario_id FROM" +
-                " usuarios WHERE usuarios.correo_electronico_usuario = 'carlos.rodriguez@ejemplo.jobtrackr.dev')";
+        String sql = "SELECT p.postulacion_id, p.usuario_id, p.empresa_id, p.rol, p.estatus, p.orden_kanban, p.salario_minimo, p.salario_maximo, p.ubicacion," +
+                " " +
+                "p.es_telematico, " +
+                "p.oferta_url, p.creada_en, p.actualizada_en, p.nota_postulacion, p.fecha_postulacion, GROUP_CONCAT(e.etiqueta_id) AS etiqueta_ids, " +
+                "GROUP_CONCAT(e" +
+                ".nombre_etiqueta) AS etiqueta_nombres, GROUP_CONCAT(e.color_etiqueta) AS etiqueta_colores" +
+                " FROM " +
+                "postulaciones p LEFT JOIN " +
+                "postulaciones_etiquetas pe ON pe.postulacion_id = p.postulacion_id LEFT JOIN etiquetas e ON e.etiqueta_id = pe.etiqueta_id" +
+                " " +
+                "WHERE p" +
+                ".usuario_id " +
+                "= " +
+                "(SELECT " +
+                "usuario_id FROM" +
+                " usuarios WHERE usuarios.correo_electronico_usuario = 'carlos.rodriguez@ejemplo.jobtrackr.dev') GROUP BY p.postulacion_id";
 
         try (Connection conn = DatabaseConfig.getConnection(); Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery(sql);
@@ -42,9 +56,16 @@ public class PostulationDAO extends RowMapper<Postulation> {
     }
 
     public Optional<Postulation> findPostulationById(int postulationId) throws SQLException {
-        String sql = "SELECT postulacion_id, usuario_id, empresa_id, rol, estatus, orden_kanban, salario_minimo, salario_maximo, ubicacion, es_telematico, " +
-                "oferta_url, creada_en, actualizada_en, nota_postulacion, fecha_postulacion FROM postulaciones p WHERE p.usuario_id = 1 AND p.postulacion_id " +
-                "= ?";
+        String sql = "SELECT p.postulacion_id, p.usuario_id, p.empresa_id, p.rol, p.estatus, p.orden_kanban, p.salario_minimo, p.salario_maximo, p.ubicacion," +
+                " p.es_telematico, " +
+                "p.oferta_url, p.creada_en, p.actualizada_en, p.nota_postulacion, p.fecha_postulacion, GROUP_CONCAT(e.etiqueta_id) AS etiqueta_ids, " +
+                "GROUP_CONCAT(e.nombre_etiqueta) AS etiqueta_nombres, GROUP_CONCAT(e.color_etiqueta) AS etiqueta_colores" +
+                " FROM postulaciones p LEFT JOIN " +
+                "postulaciones_etiquetas " +
+                "pe ON pe.postulacion_id = p.postulacion_id LEFT JOIN etiquetas e ON e.etiqueta_id = pe.etiqueta_id" +
+                " WHERE p" +
+                ".usuario_id = 1 AND p.postulacion_id " +
+                "= ? GROUP BY p.postulacion_id";
 
         try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, postulationId);
@@ -284,6 +305,21 @@ public class PostulationDAO extends RowMapper<Postulation> {
 
         postulation.setNotaPostulacion(rs.getString("nota_postulacion"));
         postulation.setFechaPostulacion(LocalDate.parse(rs.getString("fecha_postulacion")));
+
+        List<Tag> tagList = new ArrayList<>();
+
+        if (rs.getString("etiqueta_ids") != null) {
+            String[] tagIds = rs.getString("etiqueta_ids").split(",");
+            String[] tagNames = rs.getString("etiqueta_nombres").split(",");
+            String[] tagColors = rs.getString("etiqueta_colores").split(",");
+
+            for (int i = 0; i < tagIds.length; i++) {
+                tagList.add(new Tag(Integer.parseInt(tagIds[i]), tagNames[i], tagColors[i]));
+            }
+        }
+
+        postulation.setListaEtiquetas(tagList);
+
         return postulation;
     }
 
