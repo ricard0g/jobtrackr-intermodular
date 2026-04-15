@@ -1,8 +1,6 @@
 package org.ricardo.jobtrackr.dao;
 
-import com.mysql.cj.x.protobuf.MysqlxCrud;
 import org.ricardo.jobtrackr.config.DatabaseConfig;
-import org.ricardo.jobtrackr.dto.UpdateStatusRequest;
 import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.model.*;
 
@@ -107,9 +105,7 @@ public class PostulationDAO extends RowMapper<Postulation> {
             // automaticamente
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    int generatedId = generatedKeys.getInt(1);
-                    System.out.println("Generated ID: " + generatedId);
-                    return generatedId;
+                    return generatedKeys.getInt(1);
                 } else {
                     throw new DatabaseOperationException("Postulacion creada correctamente pero no se puedo recuperar el ID");
                 }
@@ -281,7 +277,7 @@ public class PostulationDAO extends RowMapper<Postulation> {
         }
     }
 
-    public int updateTags(List<PostulationTag> postulationTagList) throws SQLException {
+    public int updateTags(int postulationId, List<PostulationTag> postulationTagList) throws SQLException {
         String deleteSql = "DELETE FROM postulaciones_etiquetas WHERE postulacion_id = ?";
 
         StringBuilder insertSqlBuilder = new StringBuilder("INSERT INTO postulaciones_etiquetas (postulacion_id, etiqueta_id) VALUES ");
@@ -302,28 +298,31 @@ public class PostulationDAO extends RowMapper<Postulation> {
             conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 
             try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql); PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
-                deleteStmt.setInt(1, postulationTagList.getFirst().getPostulacionId());
+                deleteStmt.setInt(1, postulationId);
 
                 int deletedRows = deleteStmt.executeUpdate();
 
                 logger.info("🪏 " + deletedRows + " Tags Deleted during transaction");
 
-                int currentInputIdx = 1;
-                int currentPostulationTagIdx = 0;
-                while (currentPostulationTagIdx < postulationTagList.size()) {
-                    if (currentInputIdx % 2 != 0) {
-                        insertStmt.setInt(currentInputIdx, postulationTagList.get(currentPostulationTagIdx).getPostulacionId());
-                        currentInputIdx++;
-                    } else {
-                        insertStmt.setInt(currentInputIdx, postulationTagList.get(currentPostulationTagIdx).getEtiquetaId());
-                        currentInputIdx++;
-                        currentPostulationTagIdx++;
+                int insertedRows = 0;
+                if (!postulationTagList.isEmpty()) {
+                    int currentInputIdx = 1;
+                    int currentPostulationTagIdx = 0;
+                    while (currentPostulationTagIdx < postulationTagList.size()) {
+                        if (currentInputIdx % 2 != 0) {
+                            insertStmt.setInt(currentInputIdx, postulationTagList.get(currentPostulationTagIdx).getPostulacionId());
+                            currentInputIdx++;
+                        } else {
+                            insertStmt.setInt(currentInputIdx, postulationTagList.get(currentPostulationTagIdx).getEtiquetaId());
+                            currentInputIdx++;
+                            currentPostulationTagIdx++;
+                        }
                     }
+
+                    insertedRows = insertStmt.executeUpdate();
+
+                    logger.info("✍🏽 " + insertedRows + " Tags Added to Postulation");
                 }
-
-                int insertedRows = insertStmt.executeUpdate();
-
-                logger.info("✍🏽 " + insertedRows + " Tags Added to Postulation");
 
                 conn.commit();
                 return insertedRows;

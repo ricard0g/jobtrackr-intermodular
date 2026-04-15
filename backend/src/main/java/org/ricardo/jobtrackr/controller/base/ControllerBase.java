@@ -24,8 +24,4 @@ public class ControllerBase {
     protected String successMessage(String message) {
         return String.format("{\"message\":\"%s\"}", message);
     }
-
-    protected String successMessage(String message, int postulationId) {
-        return String.format("{\"message\":\"%s\"}", message);
-    }
 }

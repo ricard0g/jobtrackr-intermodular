@@ -289,7 +289,7 @@ public class PostulationController extends ControllerBase implements HttpHandler
 
             postulationService.updatePostulation(existingPostulation.getPostulacionId(), updatedPostulation);
 
-            sendResponse(exchange, 201, successMessage("Postulacion con ID " + postulationId + " Actualizada Correctamente."));
+            sendResponse(exchange, 200, successMessage("Postulacion con ID " + postulationId + " Actualizada Correctamente."));
         } catch (DatabaseOperationException e) {
             logger.log(Level.WARNING, "Error during SQL Deletion of Postulation. Error: " + e.getMessage(), e);
             sendResponse(exchange, DatabaseOperationException.STATUS_CODE, errorString(e.getMessage()));
@@ -457,7 +457,7 @@ public class PostulationController extends ControllerBase implements HttpHandler
 
             logger.info("✅ Interview with ID " + interviewId + " found and " + interviewsRemoved + " Interview was removed");
 
-            sendResponse(exchange, 201, successMessage("Entrevista Eliminada correctamente."));
+            sendResponse(exchange, 200, successMessage("Entrevista Eliminada correctamente."));
         } catch (NotFoundException e) {
             logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
             sendResponse(exchange, NotFoundException.STATUS_CODE, errorString(e.getMessage()));
@@ -483,7 +483,7 @@ public class PostulationController extends ControllerBase implements HttpHandler
 
             logger.info("✅ " + interviewsUpdated + " Interviews Updated Successfully");
 
-            sendResponse(exchange, 201, successMessage("Entrevista con ID " + existingInterview.getEntrevistaId() + " Actualizada correctamente."));
+            sendResponse(exchange, 200, successMessage("Entrevista con ID " + existingInterview.getEntrevistaId() + " Actualizada correctamente."));
         } catch (ValidationException e) {
             logger.log(Level.WARNING, "Field Validation Error. Error: " + e.getMessage(), e);
             sendResponse(exchange, ValidationException.STATUS_CODE, errorString(e.getMessage()));

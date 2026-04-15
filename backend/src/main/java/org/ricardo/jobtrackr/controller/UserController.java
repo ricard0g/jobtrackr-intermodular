@@ -28,7 +28,7 @@ public class UserController extends ControllerBase implements HttpHandler {
         logger.info("🌐 Request to /api/usuario endpoint received");
 
         if (!"GET".equals(exchange.getRequestMethod())) {
-            System.out.println("❌ Invalid Request method to /api/usuario endpoint. Method received: " + exchange.getRequestMethod());
+            logger.log(Level.WARNING, "❌ Invalid Request method to /api/usuario endpoint. Method received: " + exchange.getRequestMethod());
             sendResponse(exchange, 405, "{\"error\":\"Metodo no permitido, solo Peticiones GET para el endpoint /api/usuario.\"}");
             return;
         }

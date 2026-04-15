@@ -1,7 +1,5 @@
 package org.ricardo.jobtrackr.dto;
 
-import org.ricardo.jobtrackr.model.PostulationStatus;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 

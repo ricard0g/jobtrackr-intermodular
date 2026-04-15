@@ -58,6 +58,12 @@ public class TagController extends ControllerBase implements HttpHandler {
                     sendResponse(exchange, 404, errorString("Este endpoint no existe. Peticion no valida."));
                 }
             }
+
+            default -> {
+                logger.log(Level.WARNING, "❌ Invalid Request method to /api/etiquetas endpoint. Method received: " + exchange.getRequestMethod());
+                sendResponse(exchange, 405,
+                        errorString("Metodo no permitido, solo Peticiones GET/POST para el endpoint /api/etiquetas."));
+            }
         }
     }
 

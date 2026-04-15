@@ -2,7 +2,6 @@ package org.ricardo.jobtrackr.dao;
 
 import org.ricardo.jobtrackr.config.DatabaseConfig;
 import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
-import org.ricardo.jobtrackr.interfaces.DtoMapper;
 import org.ricardo.jobtrackr.model.Interview;
 import org.ricardo.jobtrackr.model.InterviewResult;
 import org.ricardo.jobtrackr.model.InterviewType;

@@ -134,8 +134,6 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
 
         int orderValue = updateOrderReq.get("ordenKanban").intValue();
 
-        System.out.println(orderValue);
-
         return postulationDAO.patchOrder(postulationId, orderValue);
     }
 
@@ -190,7 +188,7 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
             postulationTagList.add(toPostulationTag(postulationId, tagId));
         }
 
-        return postulationDAO.updateTags(postulationTagList);
+        return postulationDAO.updateTags(postulationId, postulationTagList);
     }
 
     private PostulationTag toPostulationTag(int postulationId, int tagId) {
