@@ -27,9 +27,15 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
     private static final Set<String> ALLOWED_PATCH_FIELDS = Set.of("empresaId", "rol", "salarioMinimo", "salarioMaximo", "ubicacion", "esTelematico",
             "ofertaUrl", "notaPostulacion", "fechaPostulacion");
 
-    private final PostulationDAO postulationDAO = new PostulationDAO();
-    private final StatusHistoryDAO statusHistoryDAO = new StatusHistoryDAO();
-    private final InterviewDAO interviewDAO = new InterviewDAO();
+    private final PostulationDAO postulationDAO;
+    private final StatusHistoryDAO statusHistoryDAO;
+    private final InterviewDAO interviewDAO;
+
+    public PostulationService(PostulationDAO postulationDAO, StatusHistoryDAO statusHistoryDAO, InterviewDAO interviewDAO) {
+        this.postulationDAO = postulationDAO;
+        this.statusHistoryDAO = statusHistoryDAO;
+        this.interviewDAO = interviewDAO;
+    }
 
     public List<Postulation> getAllPostulations() throws SQLException {
         return postulationDAO.getAllPostulations().orElseThrow(() -> new NotFoundException("No hay postulaciones en la Base de Datos"));

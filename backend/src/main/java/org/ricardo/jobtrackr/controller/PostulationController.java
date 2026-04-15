@@ -13,7 +13,6 @@ import org.ricardo.jobtrackr.service.PostulationService;
 import org.ricardo.jobtrackr.util.JsonUtil;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
@@ -22,7 +21,11 @@ import java.util.logging.Logger;
 public class PostulationController extends ControllerBase implements HttpHandler {
     private static final Logger logger = Logger.getLogger(PostulationController.class.getName());
 
-    private final PostulationService postulationService = new PostulationService();
+    private final PostulationService postulationService;
+
+    public PostulationController(PostulationService postulationService) {
+        this.postulationService = postulationService;
+    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {

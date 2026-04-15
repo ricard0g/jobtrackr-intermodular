@@ -15,7 +15,11 @@ import java.util.logging.Logger;
 public class TagService implements DtoMapper<Tag, CreateTagRequest> {
     private static final Logger logger = Logger.getLogger(TagService.class.getName());
 
-    private final TagDAO tagDAO = new TagDAO();
+    private final TagDAO tagDAO;
+
+    public TagService(TagDAO tagDAO) {
+        this.tagDAO = tagDAO;
+    }
 
     public List<Tag> getAllTags() throws SQLException {
         return tagDAO.getAllTags();

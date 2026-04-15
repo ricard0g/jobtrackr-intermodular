@@ -22,7 +22,11 @@ import java.util.logging.Logger;
 public class EnterpriseController extends ControllerBase implements HttpHandler {
     private static final Logger logger = Logger.getLogger(EnterpriseController.class.getName());
 
-    private final EnterpriseService enterpriseService = new EnterpriseService();
+    private final EnterpriseService enterpriseService;
+
+    public EnterpriseController(EnterpriseService enterpriseService) {
+        this.enterpriseService = enterpriseService;
+    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {

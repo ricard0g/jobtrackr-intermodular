@@ -83,13 +83,10 @@ public class StatusHistoryDAO extends RowMapper<StatusHistory> {
 
                 if (rsOldStatus.last()) {
                     PostulationStatus oldStatus = PostulationStatus.valueOf(rsOldStatus.getString("nuevo_estatus"));
-                    System.out.println(oldStatus);
 
                     stmt.setInt(1, postulationId);
                     stmt.setString(2, oldStatus.name());
                     stmt.setString(3, newStatus);
-
-                    System.out.println(stmt);
 
                     int rowsChanged = stmt.executeUpdate();
 

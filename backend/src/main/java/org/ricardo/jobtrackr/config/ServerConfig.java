@@ -15,12 +15,13 @@ import java.util.logging.Logger;
 public class ServerConfig {
     private static final Logger logger = Logger.getLogger(ServerConfig.class.getName());
 
-    public static void start() throws IOException {
+    public static void start(UserController userController, PostulationController postulationController, EnterpriseController enterpriseController,
+                             TagController tagController) throws IOException {
         int port = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
 
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
 
-        registerRoutes(server);
+        registerRoutes(server, userController, postulationController, enterpriseController, tagController);
 
         logger.setLevel(Level.INFO);
         logger.info("Server Routes Registered...");
@@ -31,10 +32,12 @@ public class ServerConfig {
         logger.info("SERVER RUNNING ON PORT -> " + port);
     }
 
-    private static void registerRoutes(HttpServer server) {
-        server.createContext("/api/usuario", new UserController());
-        server.createContext("/api/empresas", new EnterpriseController());
-        server.createContext("/api/postulaciones", new PostulationController());
-        server.createContext("/api/etiquetas", new TagController());
+    private static void registerRoutes(HttpServer server, UserController userController, PostulationController postulationController,
+                                       EnterpriseController enterpriseController,
+                                       TagController tagController) {
+        server.createContext("/api/usuario", userController);
+        server.createContext("/api/empresas", enterpriseController);
+        server.createContext("/api/postulaciones", postulationController);
+        server.createContext("/api/etiquetas", tagController);
     }
 }

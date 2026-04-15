@@ -17,7 +17,11 @@ import java.util.logging.Logger;
 public class UserController extends ControllerBase implements HttpHandler {
     private static final Logger logger = Logger.getLogger(UserController.class.getName());
 
-    private final UserService userService = new UserService();
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {

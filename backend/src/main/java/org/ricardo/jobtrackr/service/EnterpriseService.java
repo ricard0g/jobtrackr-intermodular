@@ -11,7 +11,11 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class EnterpriseService implements DtoMapper<Enterprise, CreateEnterpriseRequest> {
-    private final EnterpriseDAO enterpriseDAO = new EnterpriseDAO();
+    private final EnterpriseDAO enterpriseDAO;
+
+    public EnterpriseService(EnterpriseDAO enterpriseDAO) {
+        this.enterpriseDAO = enterpriseDAO;
+    }
 
     public List<Enterprise> getAllEnterprises() throws SQLException {
         return enterpriseDAO.getAllEnterprises().orElseThrow(() -> new NotFoundException("No se han encontrado Empresas."));

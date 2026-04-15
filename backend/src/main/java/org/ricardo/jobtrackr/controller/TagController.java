@@ -21,7 +21,11 @@ import java.util.logging.Logger;
 public class TagController extends ControllerBase implements HttpHandler {
     private static final Logger logger = Logger.getLogger(TagController.class.getName());
 
-    private final TagService tagService = new TagService();
+    private final TagService tagService;
+
+    public TagController(TagService tagService) {
+        this.tagService = tagService;
+    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {

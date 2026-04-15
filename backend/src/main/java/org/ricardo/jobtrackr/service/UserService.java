@@ -7,7 +7,11 @@ import org.ricardo.jobtrackr.dao.UserDAO;
 import java.sql.SQLException;
 
 public class UserService {
-    private final UserDAO userDAO = new UserDAO();
+    private final UserDAO userDAO;
+
+    public UserService(UserDAO userDAO) {
+        this.userDAO = userDAO;
+    }
 
     public User getUser() throws SQLException {
         return userDAO.getUser().orElseThrow(() -> new NotFoundException("Usuario No Encontrado"));
