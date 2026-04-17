@@ -12,6 +12,7 @@ public class ControllerBase {
     protected void sendResponse(HttpExchange exchange, int statusCode, String body) throws IOException {
         byte[] response = body.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type", "application/json");
+        exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
         exchange.sendResponseHeaders(statusCode, response.length);
         exchange.getResponseBody().write(response);
         exchange.getResponseBody().close();
