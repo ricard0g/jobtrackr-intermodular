@@ -62,8 +62,22 @@ body {
 	overflow-x: hidden;
 }
 
-#home-section, #problem-section, #features-section, #pricing-section, #faq-section {
+#home-section,
+#problem-section,
+#features-section,
+#pricing-section,
+#faq-section {
 	scroll-margin-top: 9rem;
+}
+
+@media only screen and (max-width: 768px) {
+	#home-section,
+	#problem-section,
+	#features-section,
+	#pricing-section,
+	#faq-section {
+		scroll-margin-top: 5rem;
+	}
 }
 
 /* Header */
@@ -204,7 +218,7 @@ body {
 		box-shadow: var(--cool-light-shadow);
 		z-index: 10;
 	}
-	
+
 	.logo__link {
 		display: flex;
 		justify-content: center;
@@ -645,7 +659,7 @@ body {
 		justify-content: center;
 		row-gap: 1rem;
 	}
-	
+
 	.problem__card-video-wrapper video {
 		scale: 1.3;
 	}
