@@ -25,7 +25,7 @@ navbar.addEventListener("click", (e) => {
 
 	e.preventDefault();
 
-	if (!eTarget || !e.target.getAttribute("href")?.startsWith("#")) return;
+	if (!eTarget || !eTarget.getAttribute("href")?.startsWith("#")) return;
 
 	console.log(eTarget);
 	console.log(eTarget.getAttribute("href"));
