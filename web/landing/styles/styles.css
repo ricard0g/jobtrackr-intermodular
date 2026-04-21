@@ -866,7 +866,7 @@ body {
 	box-shadow: var(--strong-shadow);
 }
 
-.pricing-card__article h1 {
+.pricing-card__article h2 {
 	background: linear-gradient(
 		90deg,
 		rgba(255, 255, 255, 1),
