@@ -1,4 +1,4 @@
-![Captura Sección Hero de la Landing Page de JobTrackr](/assets/jobtrackr-hero-screenshot.webp)
+![Captura Sección Hero de la Landing Page de JobTrackr](./assets/jobtrackr-hero-screenshot.webp)
 
 # JobTrackr Landing Page
 
