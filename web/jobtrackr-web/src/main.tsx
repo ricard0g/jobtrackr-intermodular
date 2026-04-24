@@ -17,15 +17,25 @@ const getUserData = async () => {
 	return await response.json();
 };
 
+const getAllPostulations = async () => {
+	const response = await fetch(`${API_URL}/postulaciones`);
+
+	if (!response.ok) throw response;
+	
+	return await response.json();
+}
+
 const router = createBrowserRouter([
 	{
 		path: "/",
 		element: <App />,
 		loader: () => {
 			const userData = getUserData();
+			const postulations = getAllPostulations();
 
 			return {
 				userDataPromise: userData,
+				postulationsPromise: postulations
 			};
 		},
 	},

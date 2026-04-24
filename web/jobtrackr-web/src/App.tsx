@@ -1,15 +1,14 @@
 import "./App.css";
-import type { User } from "./types/user";
+import { KanbanBoard } from "./components/kanban/KanbanBoard";
 import { Navbar } from "./components/shared/Navbar";
-
-interface LoaderData {
-	userDataPromise: Promise<User>;
-}
 
 function App() {
 	return (
-		<section className="max-w-screen w-full h-auto">
+		<section className="max-w-screen w-full max-h-screen h-auto overflow-hidden">
 			<Navbar  />
+      <main>
+        <KanbanBoard />
+      </main>
 		</section>
 	);
 }

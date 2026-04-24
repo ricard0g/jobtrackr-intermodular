@@ -17,7 +17,7 @@ export function Navbar() {
 		<header className="max-w-1/2 mx-auto my-4">
 			<nav className="w-full py-2 px-4 bg-off-white border border-light-gray shadow-cool-light rounded-lg">
 				<ul className="flex justify-between items-center w-full">
-					<li className="relative flex items-center gap-x-2 text-sm">
+					<li className="relative flex items-center gap-x-2 text-dark-gray">
 						<Button
 							onClick={() => setOpenUserData(!openUserData)}
 							variant="ghost"
@@ -32,8 +32,7 @@ export function Navbar() {
 									onClick={() =>
 										setOpenUserData(!openUserData)
 									}
-									variant="ghost"
-									className="absolute right-2 top-2 w-6 h-6 p-2 rounded-lg hover:bg-light-gray"
+									variant="ghost" className="absolute right-2 top-2 w-6 h-6 p-2 rounded-lg hover:bg-light-gray"
 								>
 									<X />
 								</Button>
