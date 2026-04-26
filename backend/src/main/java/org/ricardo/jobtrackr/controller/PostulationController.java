@@ -534,6 +534,7 @@ public class PostulationController extends ControllerBase implements HttpHandler
         return new PostulationResponse(postulation.getPostulacionId(), postulation.getUsuarioId(), postulation.getEmpresaId(), postulation.getRol(),
                 postulation.getEstatus(), postulation.getOrdenKanban(), postulation.getSalarioMinimo(), postulation.getSalarioMaximo(),
                 postulation.getUbicacion(), postulation.isEsTelematico(), postulation.getOfertaUrl(), postulation.getCreadaEn(),
-                postulation.getActualizadaEn(), postulation.getNotaPostulacion(), postulation.getFechaPostulacion(), postulation.getListaEtiquetas());
+                postulation.getActualizadaEn(), postulation.getNotaPostulacion(), postulation.getFechaPostulacion(), postulation.getListaEtiquetas(),
+                postulation.getEmpresa());
     }
 }

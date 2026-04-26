@@ -22,6 +22,7 @@ public class Postulation {
     private String notaPostulacion;
     private LocalDate fechaPostulacion;
     private List<Tag> listaEtiquetas;
+    private Enterprise empresa;
 
     public Postulation() {}
 
@@ -184,5 +185,13 @@ public class Postulation {
 
     public void setListaEtiquetas(List<Tag> listaEtiquetas) {
         this.listaEtiquetas = listaEtiquetas;
+    }
+
+    public Enterprise getEmpresa() {
+        return empresa;
+    }
+
+    public void setEmpresa(Enterprise empresa) {
+        this.empresa = empresa;
     }
 }

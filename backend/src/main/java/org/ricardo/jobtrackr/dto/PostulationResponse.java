@@ -1,5 +1,6 @@
 package org.ricardo.jobtrackr.dto;
 
+import org.ricardo.jobtrackr.model.Enterprise;
 import org.ricardo.jobtrackr.model.PostulationStatus;
 import org.ricardo.jobtrackr.model.Tag;
 
@@ -24,6 +25,7 @@ public record PostulationResponse(
         LocalDateTime actualizadaEn,
         String notaPostulacion,
         LocalDate fechaPostulacion,
-        List<Tag> tagList
-) {
+        List<Tag> tagList,
+        Enterprise empresa
+        ) {
 }

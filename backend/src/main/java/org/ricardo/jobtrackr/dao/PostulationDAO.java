@@ -17,7 +17,9 @@ public class PostulationDAO extends RowMapper<Postulation> {
     private static final Logger logger = Logger.getLogger(PostulationDAO.class.getName());
 
     public Optional<List<Postulation>> getAllPostulations() throws SQLException {
-        String sql = "SELECT p.postulacion_id, p.usuario_id, p.empresa_id, p.rol, p.estatus, p.orden_kanban, p.salario_minimo, p.salario_maximo, p.ubicacion," +
+        String sql = "SELECT p.postulacion_id, p.usuario_id, em.empresa_id, em.nombre_empresa, em.logo_empresa, p.rol, p.estatus, p.orden_kanban, " +
+                "p" +
+                ".salario_minimo, p.salario_maximo, p.ubicacion," +
                 " " +
                 "p.es_telematico, " +
                 "p.oferta_url, p.creada_en, p.actualizada_en, p.nota_postulacion, p.fecha_postulacion, GROUP_CONCAT(e.etiqueta_id) AS etiqueta_ids, " +
@@ -25,7 +27,8 @@ public class PostulationDAO extends RowMapper<Postulation> {
                 ".nombre_etiqueta) AS etiqueta_nombres, GROUP_CONCAT(e.color_etiqueta) AS etiqueta_colores" +
                 " FROM " +
                 "postulaciones p LEFT JOIN " +
-                "postulaciones_etiquetas pe ON pe.postulacion_id = p.postulacion_id LEFT JOIN etiquetas e ON e.etiqueta_id = pe.etiqueta_id" +
+                "postulaciones_etiquetas pe ON pe.postulacion_id = p.postulacion_id LEFT JOIN etiquetas e ON e.etiqueta_id = pe.etiqueta_id JOIN empresas em " +
+                "ON em.empresa_id = p.empresa_id" +
                 " " +
                 "WHERE p" +
                 ".usuario_id " +
@@ -372,6 +375,8 @@ public class PostulationDAO extends RowMapper<Postulation> {
         }
 
         postulation.setListaEtiquetas(tagList);
+
+        postulation.setEmpresa(new Enterprise(rs.getInt("empresa_id"), rs.getString("nombre_empresa"), rs.getString("logo_empresa")));
 
         return postulation;
     }
