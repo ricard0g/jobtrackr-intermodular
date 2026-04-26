@@ -1,4 +1,4 @@
-import type { PostulationStatusEnum } from "./postulationStatus";
+import type { Enterprise } from "./enterprise";
 import type { Tag } from "./tag";
 
 export interface Postulation {
@@ -18,4 +18,5 @@ export interface Postulation {
     notaPostulacion: string;
     fechaPostulacion: string;
     tagList: Tag[];
+    empresa: Enterprise;
 }

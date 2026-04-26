@@ -15,3 +15,12 @@ export enum PostulationStatusEnum {
 	DESCARTADA,
 	RETIRADA,
 }
+
+export const postulationStatus = [
+	PostulationStatus.POSTULADA,
+	PostulationStatus.REVISION,
+	PostulationStatus.ENTREVISTA,
+	PostulationStatus.OFERTA,
+	PostulationStatus.DESCARTADA,
+	PostulationStatus.RETIRADA,
+];
