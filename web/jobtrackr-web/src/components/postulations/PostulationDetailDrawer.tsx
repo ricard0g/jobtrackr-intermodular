@@ -443,7 +443,7 @@ export function PostulationDetailDrawer({
 					</div>
 				</header>
 
-				<section className="grid gap-2">
+				<section className="grid max-h-[45dvh] gap-2 overflow-y-auto pr-1">
 					<h3 className="text-left text-base font-normal text-medium-gray">
 						Detalles
 					</h3>

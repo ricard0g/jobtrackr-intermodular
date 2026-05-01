@@ -4,7 +4,7 @@ import { postulationStatus } from "@/types/postulationStatus";
 import { StatusColumn } from "./StatusColumn";
 import type { Postulation } from "@/types/postulation";
 import { useLoaderData } from "react-router";
-import { use, useState } from "react";
+import { use, useRef, useState } from "react";
 import { PostulationDetailDrawer } from "../postulations/PostulationDetailDrawer";
 
 interface KanbanBoardLoaderData {
@@ -13,7 +13,12 @@ interface KanbanBoardLoaderData {
 
 type StatusLabel = (typeof postulationStatus)[number][0];
 type PostulationsByStatus = Record<StatusLabel, Postulation[]>;
+type OrderPatch = {
+	postulacionId: number;
+	ordenKanban: number;
+};
 
+const API_URL = import.meta.env.VITE_API_URL;
 const statusLabels = postulationStatus.map(([status]) => status);
 
 const isStatusLabel = (value: unknown): value is StatusLabel =>
@@ -38,6 +43,36 @@ const normalizeKanbanOrder = (
 			]),
 		),
 	};
+};
+
+const patchJson = async (path: string, body: object) => {
+	const response = await fetch(`${API_URL}${path}`, {
+		method: "PATCH",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(body),
+	});
+
+	if (!response.ok) {
+		throw response;
+	}
+};
+
+const patchPostulationStatus = async (
+	postulacionId: number,
+	estatus: string,
+) => {
+	await patchJson(`/postulaciones/${postulacionId}/estatus`, { estatus });
+};
+
+const patchPostulationOrder = async (
+	postulacionId: number,
+	ordenKanban: number,
+) => {
+	await patchJson(`/postulaciones/${postulacionId}/orden`, {
+		ordenKanban,
+	});
 };
 
 const groupPostulationsByStatus = (
@@ -93,6 +128,67 @@ const movePostulation = (
 	);
 };
 
+const getChangedOrderPatches = (
+	previousPostulations: Postulation[],
+	nextPostulations: Postulation[],
+): OrderPatch[] => {
+	const previousOrderById = new Map(
+		previousPostulations.map((postulation) => [
+			postulation.postulacionId,
+			postulation.ordenKanban,
+		]),
+	);
+
+	return nextPostulations
+		.filter(
+			(postulation) =>
+				previousOrderById.get(postulation.postulacionId) !==
+				postulation.ordenKanban,
+		)
+		.map(({ postulacionId, ordenKanban }) => ({
+			postulacionId,
+			ordenKanban,
+		}));
+};
+
+const persistKanbanMove = async (
+	previousPostulations: PostulationsByStatus,
+	nextPostulations: PostulationsByStatus,
+	movedPostulationId: number,
+	fromStatus: StatusLabel,
+	toStatus: StatusLabel,
+) => {
+	const orderPatches =
+		fromStatus === toStatus
+			? getChangedOrderPatches(
+					previousPostulations[fromStatus],
+					nextPostulations[fromStatus],
+				)
+			: [
+					...getChangedOrderPatches(
+						previousPostulations[fromStatus],
+						nextPostulations[fromStatus],
+					),
+					...getChangedOrderPatches(
+						previousPostulations[toStatus],
+						nextPostulations[toStatus],
+					),
+				];
+
+	if (fromStatus !== toStatus) {
+		await patchPostulationStatus(
+			movedPostulationId,
+			toBackendStatus(toStatus),
+		);
+	}
+
+	await Promise.all(
+		orderPatches.map(({ postulacionId, ordenKanban }) =>
+			patchPostulationOrder(postulacionId, ordenKanban),
+		),
+	);
+};
+
 export function KanbanBoard() {
 	const { postulationsPromise } = useLoaderData<KanbanBoardLoaderData>();
 	const postulations = use(postulationsPromise);
@@ -117,6 +213,7 @@ function KanbanBoardContent({
 		);
 	const [selectedPostulation, setSelectedPostulation] =
 		useState<Postulation | null>(null);
+	const persistenceVersionRef = useRef(0);
 
 	const handleDragEnd = (event: DragEndEvent) => {
 		if (event.canceled) return;
@@ -127,8 +224,11 @@ function KanbanBoardContent({
 
 		const fromStatus = source.initialGroup;
 		const fromIndex = source.initialIndex;
+		const movedPostulationId =
+			typeof source.id === "number" ? source.id : Number(source.id);
 
-		if (!isStatusLabel(fromStatus)) return;
+		if (!isStatusLabel(fromStatus) || Number.isNaN(movedPostulationId))
+			return;
 
 		let toStatus: StatusLabel | undefined;
 		let toIndex: number | undefined;
@@ -140,10 +240,6 @@ function KanbanBoardContent({
 			toIndex = postulationsState[toStatus].length;
 		} else if (isSortable(target)) {
 			if (!isStatusLabel(target.group)) return;
-
-			console.log(event);
-			console.log(event.operation.shape?.current.center);
-			console.log(event.operation.position.current);
 
 			const activeCenter =
 				event.operation.shape?.current.center ??
@@ -160,15 +256,30 @@ function KanbanBoardContent({
 		if (!toStatus || toIndex === undefined) return;
 		if (fromStatus === toStatus && fromIndex === toIndex) return;
 
-		setPostulationsState((currentPostulations) =>
-			movePostulation(
-				currentPostulations,
-				fromStatus,
-				fromIndex,
-				toStatus,
-				toIndex,
-			),
+		const previousPostulations = postulationsState;
+		const nextPostulations = movePostulation(
+			previousPostulations,
+			fromStatus,
+			fromIndex,
+			toStatus,
+			toIndex,
 		);
+		const persistenceVersion = persistenceVersionRef.current + 1;
+		persistenceVersionRef.current = persistenceVersion;
+
+		setPostulationsState(nextPostulations);
+
+		void persistKanbanMove(
+			previousPostulations,
+			nextPostulations,
+			movedPostulationId,
+			fromStatus,
+			toStatus,
+		).catch(() => {
+			if (persistenceVersionRef.current === persistenceVersion) {
+				setPostulationsState(previousPostulations);
+			}
+		});
 	};
 
 	return (

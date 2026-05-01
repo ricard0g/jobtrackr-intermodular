@@ -31,6 +31,11 @@ public class PostulationController extends ControllerBase implements HttpHandler
     public void handle(HttpExchange exchange) throws IOException {
         logger.info(String.format("Received Request at --> /api/postulaciones. Request Method: %s", exchange.getRequestMethod()));
 
+        if ("OPTIONS".equals(exchange.getRequestMethod())) {
+            sendNoContentResponse(exchange, 204);
+            return;
+        }
+
         String body = new String(exchange.getRequestBody().readAllBytes());
         String path = exchange.getRequestURI().getPath();
 
@@ -159,7 +164,7 @@ public class PostulationController extends ControllerBase implements HttpHandler
                     }
                 } else if (path.matches("/api/postulaciones/[0-9]+/orden")) {
                     try {
-                        Map<String, Double> orderUpdateReq = JsonUtil.fromJson(body, HashMap.class);
+                        UpdateOrderRequest orderUpdateReq = JsonUtil.fromJson(body, UpdateOrderRequest.class);
 
                         patchOrder(exchange, orderUpdateReq, path.split("/"));
                     } catch (JsonSyntaxException e) {
@@ -334,7 +339,7 @@ public class PostulationController extends ControllerBase implements HttpHandler
         }
     }
 
-    private void patchOrder(HttpExchange exchange, Map<String, Double> updateOrderRequest, String[] requestPathSplit) throws IOException {
+    private void patchOrder(HttpExchange exchange, UpdateOrderRequest updateOrderRequest, String[] requestPathSplit) throws IOException {
         try {
             int postulationId = Integer.parseInt(requestPathSplit[3]);
 

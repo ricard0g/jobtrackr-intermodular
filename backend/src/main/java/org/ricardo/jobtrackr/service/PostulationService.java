@@ -4,6 +4,7 @@ import org.ricardo.jobtrackr.dao.InterviewDAO;
 import org.ricardo.jobtrackr.dao.StatusHistoryDAO;
 import org.ricardo.jobtrackr.dto.CreateInterviewRequest;
 import org.ricardo.jobtrackr.dto.CreatePostulationRequest;
+import org.ricardo.jobtrackr.dto.UpdateOrderRequest;
 import org.ricardo.jobtrackr.dto.UpdateStatusRequest;
 import org.ricardo.jobtrackr.exceptions.DatabaseOperationException;
 import org.ricardo.jobtrackr.exceptions.NotFoundException;
@@ -128,11 +129,16 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
         }
     }
 
-    public int patchOrder(int postulationId, Map<String, Double> updateOrderReq) throws SQLException, ValidationException, ClassCastException {
-        if (!updateOrderReq.containsKey("ordenKanban"))
-            throw new ValidationException("El campo 'ordenKanban' no esta presente, peticion invalida. Reivsalo e " + "intentalo de nuevo");
+    public int patchOrder(int postulationId, UpdateOrderRequest updateOrderReq) throws SQLException, ValidationException {
+        if (updateOrderReq == null || updateOrderReq.getOrdenKanban() == null)
+            throw new ValidationException("El campo 'ordenKanban' no esta presente, peticion invalida. Revisalo e intentalo de nuevo");
 
-        int orderValue = updateOrderReq.get("ordenKanban").intValue();
+        double rawOrderValue = updateOrderReq.getOrdenKanban();
+
+        if (rawOrderValue < 0 || rawOrderValue % 1 != 0)
+            throw new ValidationException("El campo 'ordenKanban' debe ser un numero entero mayor o igual a 0.");
+
+        int orderValue = updateOrderReq.getOrdenKanban().intValue();
 
         return postulationDAO.patchOrder(postulationId, orderValue);
     }
