@@ -524,7 +524,7 @@ export function PostulationDetailDrawer({
 							</p>
 						)}
 
-					<div className="grid gap-2">
+					<div className="grid max-h-[28dvh] gap-2 overflow-y-auto pr-1">
 						{interviews.map((interview) => {
 							const resultBadge =
 								resultBadgeStyles[
@@ -742,6 +742,16 @@ export function PostulationDetailDrawer({
 						<Plus />
 						Añadir Entrevista
 					</Button>
+				</section>
+
+				<section className="grid w-full gap-2">
+					<h3 className="text-left text-base font-normal text-medium-gray">
+						Nota Postulacion
+					</h3>
+					<div className="min-h-24 w-full whitespace-pre-wrap rounded-md border border-light-gray bg-off-white p-4 text-left font-display text-sm text-black italic shadow-cool-light-inner">
+						{postulation.notaPostulacion?.trim() ||
+							"Sin nota registrada."}
+					</div>
 				</section>
 			</DialogContent>
 		</Dialog>
