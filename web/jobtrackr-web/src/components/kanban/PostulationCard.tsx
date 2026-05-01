@@ -2,17 +2,15 @@ import type { Postulation } from "@/types/postulation";
 import { useSortable } from "@dnd-kit/react/sortable";
 
 interface PostulationCardProps {
-	postulationId: number;
 	index: number;
 	status: string;
 	postulation: Postulation;
 }
 
 export function PostulationCard({
-	// postulationId,
 	index,
 	status,
-	postulation
+	postulation,
 }: PostulationCardProps) {
 	const { ref, isDragging } = useSortable({
 		id: postulation.postulacionId,
@@ -20,6 +18,7 @@ export function PostulationCard({
 		group: status,
 		type: "item",
 		accept: "item",
+		plugins: [],
 	});
 
 	const formatLocalDate = (date: string): string => {
@@ -40,6 +39,7 @@ export function PostulationCard({
 				<img
 					className="w-10 h-10 rounded-md"
 					src={postulation.empresa.logoEmpresa}
+					alt={`${postulation.empresa.nombreEmpresa} logo`}
 				/>
 				<div>
 					<p className="font-bold font-display">
@@ -53,6 +53,7 @@ export function PostulationCard({
 			<div className="flex gap-x-1">
 				{postulation.tagList.slice(0, 4).map((tag) => (
 					<span
+						key={tag.etiquetaId}
 						className="text-xs py-0.5 px-3 rounded-full"
 						style={{
 							color: tag.colorEtiqueta,

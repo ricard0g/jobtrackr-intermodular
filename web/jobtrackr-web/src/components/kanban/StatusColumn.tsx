@@ -4,21 +4,16 @@ import { Plus } from "lucide-react";
 import { PostulationCard } from "./PostulationCard";
 import { CollisionPriority } from "@dnd-kit/abstract";
 import type { Postulation } from "@/types/postulation";
-import { Children, type ReactNode } from "react";
 
 interface StatusColumnProps {
 	status: string;
 	columnColor: string;
-	// postulationIds: number[];
 	postulations: Postulation[];
-	// children: ReactNode[];
 }
 
 export function StatusColumn({
 	status,
 	columnColor,
-	// children,
-	// postulationIds,
 	postulations,
 }: StatusColumnProps) {
 	const { ref } = useDroppable({
@@ -31,7 +26,7 @@ export function StatusColumn({
 	return (
 		<div
 			ref={ref}
-			className="h-[85vh] min-w-[20vw] max-w-[20vw] bg-off-white rounded-lg border border-light-gray shadow-cool-light p-4"
+			className="h-[85vh] min-w-[20vw] max-w-[20vw] overflow-y-hidden  bg-off-white rounded-lg border border-light-gray shadow-cool-light p-4"
 		>
 			<div className="flex justify-between items-center mb-2">
 				<div className="flex items-center justify-start gap-x-2">
@@ -52,11 +47,10 @@ export function StatusColumn({
 				</Button>
 			</div>
 
-			<div className="flex flex-col gap-y-2">
+			<div className="flex flex-col gap-y-2 max-h-full pb-10 scrollbar-hide overflow-y-scroll">
 				{postulations.map((p, index) => (
 					<PostulationCard
 						key={p.postulacionId}
-						postulationId={p.postulacionId}
 						index={index}
 						status={status}
 						postulation={p}
