@@ -25,6 +25,14 @@ const getAllPostulations = async () => {
 	return await response.json();
 }
 
+const getAllEnterprises = async () => {
+	const response = await fetch(`${API_URL}/empresas`);
+
+	if (!response.ok) throw response;
+
+	return await response.json();
+};
+
 const router = createBrowserRouter([
 	{
 		path: "/",
@@ -32,10 +40,12 @@ const router = createBrowserRouter([
 		loader: () => {
 			const userData = getUserData();
 			const postulations = getAllPostulations();
+			const enterprises = getAllEnterprises();
 
 			return {
 				userDataPromise: userData,
-				postulationsPromise: postulations
+				postulationsPromise: postulations,
+				enterprisesPromise: enterprises,
 			};
 		},
 	},

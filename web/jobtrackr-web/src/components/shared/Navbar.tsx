@@ -1,17 +1,25 @@
 import type { User as UserModel } from "@/types/user";
-import { CirclePlus, User, X } from "lucide-react";
+import type { Enterprise } from "@/types/enterprise";
+import type { Postulation } from "@/types/postulation";
+import { User, X } from "lucide-react";
 import { use, useState } from "react";
 import { Button } from "../ui/button";
 import { useLoaderData } from "react-router";
+import { CreatePostulationDialog } from "../postulations/CreatePostulationDialog";
 
 interface NavbarLoaderData {
 	userDataPromise: Promise<UserModel>;
+	enterprisesPromise: Promise<Enterprise[]>;
+	postulationsPromise: Promise<Postulation[]>;
 }
 
 export function Navbar() {
 	const [openUserData, setOpenUserData] = useState(false);
-	const { userDataPromise } = useLoaderData<NavbarLoaderData>();
+	const { enterprisesPromise, postulationsPromise, userDataPromise } =
+		useLoaderData<NavbarLoaderData>();
 	const user = use(userDataPromise);
+	const enterprises = use(enterprisesPromise);
+	const postulations = use(postulationsPromise);
 
 	return (
 		<header className="max-w-1/2 mx-auto my-4">
@@ -56,9 +64,11 @@ export function Navbar() {
 						)}
 					</li>
 					<li>
-						<Button size="lg" variant="default">
-							<CirclePlus /> Crear Postulacion
-						</Button>
+						<CreatePostulationDialog
+							user={user}
+							enterprises={enterprises}
+							postulations={postulations}
+						/>
 					</li>
 				</ul>
 			</nav>

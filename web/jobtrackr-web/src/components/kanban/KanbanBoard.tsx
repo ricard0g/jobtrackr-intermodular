@@ -95,6 +95,21 @@ const movePostulation = (
 export function KanbanBoard() {
 	const { postulationsPromise } = useLoaderData<KanbanBoardLoaderData>();
 	const postulations = use(postulationsPromise);
+	const boardKey = postulations
+		.map(
+			(postulation) =>
+				`${postulation.postulacionId}:${postulation.estatus}:${postulation.ordenKanban}:${postulation.actualizadaEn}`,
+		)
+		.join("|");
+
+	return <KanbanBoardContent key={boardKey} postulations={postulations} />;
+}
+
+function KanbanBoardContent({
+	postulations,
+}: {
+	postulations: Postulation[];
+}) {
 	const [postulationsState, setPostulationsState] =
 		useState<PostulationsByStatus>(() =>
 			groupPostulationsByStatus(postulations),
