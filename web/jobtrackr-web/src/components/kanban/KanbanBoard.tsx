@@ -5,6 +5,7 @@ import { StatusColumn } from "./StatusColumn";
 import type { Postulation } from "@/types/postulation";
 import { useLoaderData } from "react-router";
 import { use, useState } from "react";
+import { PostulationDetailDrawer } from "../postulations/PostulationDetailDrawer";
 
 interface KanbanBoardLoaderData {
 	postulationsPromise: Promise<Postulation[]>;
@@ -114,6 +115,8 @@ function KanbanBoardContent({
 		useState<PostulationsByStatus>(() =>
 			groupPostulationsByStatus(postulations),
 		);
+	const [selectedPostulation, setSelectedPostulation] =
+		useState<Postulation | null>(null);
 
 	const handleDragEnd = (event: DragEndEvent) => {
 		if (event.canceled) return;
@@ -177,9 +180,17 @@ function KanbanBoardContent({
 						status={status}
 						columnColor={columnColor}
 						postulations={postulationsState[status]}
+						onOpenDetails={setSelectedPostulation}
 					/>
 				))}
 			</div>
+			<PostulationDetailDrawer
+				open={selectedPostulation !== null}
+				onOpenChange={(open) => {
+					if (!open) setSelectedPostulation(null);
+				}}
+				postulation={selectedPostulation}
+			/>
 		</DragDropProvider>
 	);
 }

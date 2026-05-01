@@ -9,12 +9,14 @@ interface StatusColumnProps {
 	status: string;
 	columnColor: string;
 	postulations: Postulation[];
+	onOpenDetails: (postulation: Postulation) => void;
 }
 
 export function StatusColumn({
 	status,
 	columnColor,
 	postulations,
+	onOpenDetails,
 }: StatusColumnProps) {
 	const { ref } = useDroppable({
 		id: status,
@@ -54,6 +56,7 @@ export function StatusColumn({
 						index={index}
 						status={status}
 						postulation={p}
+						onOpenDetails={onOpenDetails}
 					/>
 				))}
 			</div>
