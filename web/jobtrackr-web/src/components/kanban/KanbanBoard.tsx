@@ -26,6 +26,14 @@ const isStatusLabel = (value: unknown): value is StatusLabel =>
 
 const toBackendStatus = (status: StatusLabel) => status.toUpperCase();
 
+const toStatusLabel = (status: string): StatusLabel | null => {
+	const statusLabel = statusLabels.find(
+		(label) => label.toUpperCase() === status,
+	);
+
+	return statusLabel ?? null;
+};
+
 const normalizeKanbanOrder = (
 	postulationsByStatus: PostulationsByStatus,
 	statuses: StatusLabel[],
@@ -89,6 +97,46 @@ const groupPostulationsByStatus = (
 				.toSorted((a, b) => a.ordenKanban - b.ordenKanban),
 		]),
 	) as PostulationsByStatus;
+};
+
+const removePostulationById = (
+	postulationsByStatus: PostulationsByStatus,
+	postulacionId: number,
+): PostulationsByStatus =>
+	Object.fromEntries(
+		postulationStatus.map(([status]) => [
+			status,
+			postulationsByStatus[status].filter(
+				(postulation) =>
+					postulation.postulacionId !== postulacionId,
+			),
+		]),
+	) as PostulationsByStatus;
+
+const replacePostulation = (
+	postulationsByStatus: PostulationsByStatus,
+	updatedPostulation: Postulation,
+): PostulationsByStatus => {
+	const targetStatus = toStatusLabel(updatedPostulation.estatus);
+
+	if (!targetStatus) return postulationsByStatus;
+
+	const withoutPostulation = removePostulationById(
+		postulationsByStatus,
+		updatedPostulation.postulacionId,
+	);
+	const targetPostulations = [...withoutPostulation[targetStatus]];
+	const targetIndex = Math.max(
+		0,
+		Math.min(updatedPostulation.ordenKanban, targetPostulations.length),
+	);
+
+	targetPostulations.splice(targetIndex, 0, updatedPostulation);
+
+	return {
+		...withoutPostulation,
+		[targetStatus]: targetPostulations,
+	};
 };
 
 const movePostulation = (
@@ -215,6 +263,30 @@ function KanbanBoardContent({
 		useState<Postulation | null>(null);
 	const persistenceVersionRef = useRef(0);
 
+	const getNextOrderKanban = (estatus: string, postulacionId: number) => {
+		const status = toStatusLabel(estatus);
+
+		if (!status) return 0;
+
+		return postulationsState[status].filter(
+			(postulation) => postulation.postulacionId !== postulacionId,
+		).length;
+	};
+
+	const handlePostulationUpdated = (updatedPostulation: Postulation) => {
+		setPostulationsState((currentPostulations) =>
+			replacePostulation(currentPostulations, updatedPostulation),
+		);
+		setSelectedPostulation(updatedPostulation);
+	};
+
+	const handlePostulationDeleted = (postulacionId: number) => {
+		setPostulationsState((currentPostulations) =>
+			removePostulationById(currentPostulations, postulacionId),
+		);
+		setSelectedPostulation(null);
+	};
+
 	const handleDragEnd = (event: DragEndEvent) => {
 		if (event.canceled) return;
 
@@ -301,6 +373,9 @@ function KanbanBoardContent({
 					if (!open) setSelectedPostulation(null);
 				}}
 				postulation={selectedPostulation}
+				getNextOrderKanban={getNextOrderKanban}
+				onPostulationUpdated={handlePostulationUpdated}
+				onPostulationDeleted={handlePostulationDeleted}
 			/>
 		</DragDropProvider>
 	);

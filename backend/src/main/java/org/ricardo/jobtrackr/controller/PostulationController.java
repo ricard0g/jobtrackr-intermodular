@@ -511,11 +511,19 @@ public class PostulationController extends ControllerBase implements HttpHandler
         try {
             int postulationId = Integer.parseInt(requestPathSplit[3]);
 
+            postulationService.findPostulationById(postulationId);
+
             int updatedTags = postulationService.updateTags(postulationId, tagIds);
 
             logger.info("✅ " + updatedTags + " Tags were updated successfully");
 
             sendResponse(exchange, 200, successMessage(updatedTags + " Etiquetas actualizadas correctamente"));
+        } catch (ValidationException e) {
+            logger.log(Level.WARNING, "Field Validation Error. Error: " + e.getMessage(), e);
+            sendResponse(exchange, ValidationException.STATUS_CODE, errorString(e.getMessage()));
+        } catch (NotFoundException e) {
+            logger.log(Level.WARNING, "Not Found Exception. Error: " + e.getMessage(), e);
+            sendResponse(exchange, NotFoundException.STATUS_CODE, errorString(e.getMessage()));
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Unhandled Error during SQL Update of Postulation. DB Connection error. Error: " + e.getMessage(), e);
             sendResponse(exchange, 500, errorString("Error de Base de Datos en el servidor."));

@@ -54,13 +54,13 @@ public class PostulationDAO extends RowMapper<Postulation> {
     }
 
     public Optional<Postulation> findPostulationById(int postulationId) throws SQLException {
-        String sql = "SELECT p.postulacion_id, p.usuario_id, p.empresa_id, p.rol, p.estatus, p.orden_kanban, p.salario_minimo, p.salario_maximo, p.ubicacion," +
+        String sql = "SELECT p.postulacion_id, p.usuario_id, em.empresa_id, em.nombre_empresa, em.logo_empresa, p.rol, p.estatus, p.orden_kanban, p.salario_minimo, p.salario_maximo, p.ubicacion," +
                 " p.es_telematico, " +
                 "p.oferta_url, p.creada_en, p.actualizada_en, p.nota_postulacion, p.fecha_postulacion, GROUP_CONCAT(e.etiqueta_id) AS etiqueta_ids, " +
                 "GROUP_CONCAT(e.nombre_etiqueta) AS etiqueta_nombres, GROUP_CONCAT(e.color_etiqueta) AS etiqueta_colores" +
                 " FROM postulaciones p LEFT JOIN " +
                 "postulaciones_etiquetas " +
-                "pe ON pe.postulacion_id = p.postulacion_id LEFT JOIN etiquetas e ON e.etiqueta_id = pe.etiqueta_id" +
+                "pe ON pe.postulacion_id = p.postulacion_id LEFT JOIN etiquetas e ON e.etiqueta_id = pe.etiqueta_id JOIN empresas em ON em.empresa_id = p.empresa_id" +
                 " WHERE p" +
                 ".usuario_id = 1 AND p.postulacion_id " +
                 "= ? GROUP BY p.postulacion_id";
@@ -283,13 +283,6 @@ public class PostulationDAO extends RowMapper<Postulation> {
     public int updateTags(int postulationId, List<PostulationTag> postulationTagList) throws SQLException {
         String deleteSql = "DELETE FROM postulaciones_etiquetas WHERE postulacion_id = ?";
 
-        StringBuilder insertSqlBuilder = new StringBuilder("INSERT INTO postulaciones_etiquetas (postulacion_id, etiqueta_id) VALUES ");
-        for (int i = 0; i < postulationTagList.size(); i++) {
-            insertSqlBuilder.append((i == postulationTagList.size() - 1) ? "(?, ?)" : "(?, ?), ");
-        }
-
-        String insertSql = insertSqlBuilder.toString();
-
         try (Connection conn = DatabaseConfig.getConnection()) {
             // Iniciamos transaccion para asegurarnos de mantener Integridad de Datos y que todas las operaciones salen bien
             // TRANSACTION_READ_COMMITTED --> Establece el Lock del DBMS para no permitir que los datos que se estan usando en la transaccion sean accedidos
@@ -300,7 +293,7 @@ public class PostulationDAO extends RowMapper<Postulation> {
             conn.setAutoCommit(false);
             conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 
-            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql); PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
                 deleteStmt.setInt(1, postulationId);
 
                 int deletedRows = deleteStmt.executeUpdate();
@@ -309,20 +302,27 @@ public class PostulationDAO extends RowMapper<Postulation> {
 
                 int insertedRows = 0;
                 if (!postulationTagList.isEmpty()) {
-                    int currentInputIdx = 1;
-                    int currentPostulationTagIdx = 0;
-                    while (currentPostulationTagIdx < postulationTagList.size()) {
-                        if (currentInputIdx % 2 != 0) {
-                            insertStmt.setInt(currentInputIdx, postulationTagList.get(currentPostulationTagIdx).getPostulacionId());
-                            currentInputIdx++;
-                        } else {
-                            insertStmt.setInt(currentInputIdx, postulationTagList.get(currentPostulationTagIdx).getEtiquetaId());
-                            currentInputIdx++;
-                            currentPostulationTagIdx++;
-                        }
+                    StringBuilder insertSqlBuilder = new StringBuilder("INSERT INTO postulaciones_etiquetas (postulacion_id, etiqueta_id) VALUES ");
+                    for (int i = 0; i < postulationTagList.size(); i++) {
+                        insertSqlBuilder.append((i == postulationTagList.size() - 1) ? "(?, ?)" : "(?, ?), ");
                     }
 
-                    insertedRows = insertStmt.executeUpdate();
+                    try (PreparedStatement insertStmt = conn.prepareStatement(insertSqlBuilder.toString())) {
+                        int currentInputIdx = 1;
+                        int currentPostulationTagIdx = 0;
+                        while (currentPostulationTagIdx < postulationTagList.size()) {
+                            if (currentInputIdx % 2 != 0) {
+                                insertStmt.setInt(currentInputIdx, postulationTagList.get(currentPostulationTagIdx).getPostulacionId());
+                                currentInputIdx++;
+                            } else {
+                                insertStmt.setInt(currentInputIdx, postulationTagList.get(currentPostulationTagIdx).getEtiquetaId());
+                                currentInputIdx++;
+                                currentPostulationTagIdx++;
+                            }
+                        }
+
+                        insertedRows = insertStmt.executeUpdate();
+                    }
 
                     logger.info("✍🏽 " + insertedRows + " Tags Added to Postulation");
                 }

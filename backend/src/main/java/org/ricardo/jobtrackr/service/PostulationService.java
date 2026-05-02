@@ -187,10 +187,19 @@ public class PostulationService implements DtoMapper<Postulation, CreatePostulat
         return interviewDAO.updateInterview(updatedInterview);
     }
 
-    public int updateTags(int postulationId, int[] tagIds) throws SQLException {
+    public int updateTags(int postulationId, int[] tagIds) throws SQLException, ValidationException {
         List<PostulationTag> postulationTagList = new ArrayList<>();
+        Set<Integer> uniqueTagIds = new LinkedHashSet<>();
 
         for (int tagId : tagIds) {
+            if (tagId <= 0) {
+                throw new ValidationException("Los IDs de etiquetas deben ser numeros positivos.");
+            }
+
+            uniqueTagIds.add(tagId);
+        }
+
+        for (int tagId : uniqueTagIds) {
             postulationTagList.add(toPostulationTag(postulationId, tagId));
         }
 
