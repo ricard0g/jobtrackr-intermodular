@@ -9,6 +9,22 @@ Backend de **JobTrackr**, una API REST en Java que gestiona usuarios, empresas, 
 - Dar servicio al frontend mediante peticiones HTTP (`/api/...`).
 - Mostrar un diseño por capas (configuración, modelo, DAO, servicio, controlador) propio de un proyecto profesional sencillo.
 
+## Cómo probar este backend?
+
+Para probar el backend he desarrollado una interfaz web que se encuentra en `jobtrackr-intermodular/web/jobtrackr-web/`, es un kanban board sencillo, una SPA con React para hacer peticiones a este backend.
+
+Por lo tanto, es necesario hacer lo siguiente una vez este descargado este backend y ejecutando el servidor:
+
+```bash
+cd ~/jobtrackr-intermodular/web/jobtrackr-web/
+
+npm install
+
+npm run dev
+```
+
+Y a partir de aqui se puede usar el front para hacer peticiones a este servidor.
+
 
 ## Tecnologías usadas
 
