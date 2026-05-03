@@ -6,7 +6,6 @@ JobTrackr es un proyecto intermodular de 1º de DAW: una aplicación web tipo Ka
 
 El objetivo es aprender y demostrar bases sólidas de programación, bases de datos y desarrollo web usando tecnologías lo más “core” posible, sin frameworks pesados en el backend.
 
-***
 
 ## Objetivo del proyecto
 
@@ -14,7 +13,6 @@ El objetivo es aprender y demostrar bases sólidas de programación, bases de da
 - Practicar el ciclo completo: diseño de base de datos, backend en Java con API REST, frontend web (landing + SPA) y documentación para los distintos módulos del ciclo.
 - Preparar el proyecto para poder desplegarlo en producción (Docker, Vercel para el front y Railway para backend + MySQL) aunque pueda ejecutarse sin problema en local.
 
-***
 
 ## Funcionalidades principales (MVP)
 
@@ -28,7 +26,6 @@ El MVP de JobTrackr se centra en:
 
 Por simplicidad y por los requisitos de 1º de DAW, el backend no implementa autenticación ni autorización reales; el foco está en el flujo de datos y la arquitectura en capas.
 
-***
 
 ## Arquitectura general del repositorio
 
@@ -47,7 +44,6 @@ El proyecto está organizado como un monorepo con cuatro carpetas principales:
 - `/sql`: Scripts obligatorios para el módulo de Bases de Datos: `schema.sql`, `seed.sql` y `queries.sql`.
 - `/docs`: Informes técnicos y documentación para Sistemas Informáticos, Entornos, IPE, etc.
 
-***
 
 ## Base de datos: MySQL
 
@@ -69,7 +65,6 @@ En `/sql` encontrarás tres scripts principales:
 - `seed.sql`: Inserta datos de ejemplo (usuarios de prueba, empresas españolas, candidaturas con distintos estados, entrevistas y etiquetas).
 - `queries.sql`: Incluye consultas típicas que el profesor puede ejecutar (listados, búsquedas, joins y consultas útiles para la “empresa ficticia”).
 
-***
 
 ## Backend: Java Core + JDBC
 
@@ -88,7 +83,6 @@ Características principales:
 
 Actualmente no se implementa autenticación ni autorización: todos los endpoints están abiertos para simplificar el proyecto dentro del nivel de 1º de DAW.
 
-***
 
 ## Frontend: Landing + SPA
 
@@ -119,7 +113,6 @@ Esta parte sirve sobre todo para el módulo de Lenguajes de Marcas y Entornos de
 
 Esta parte está pensada como la “aplicación real” que se conecta al backend y a la base de datos, y sirve para demostrar dominio de programación y buenas prácticas en arquitectura cliente-servidor.
 
-***
 
 ## Ejecución en local (resumen)
 
@@ -158,7 +151,6 @@ Luego acceder a la URL indicada por Vite (normalmente `http://localhost:5173`).
 
 Asegúrate de que la SPA apunte a la URL correcta del backend (por defecto `http://localhost:PUERTO_BACKEND`).
 
-***
 
 ## Despliegue e infraestructura (objetivo)
 
@@ -169,7 +161,6 @@ Aunque el proyecto puede evaluarse ejecutándolo en local, la arquitectura está
 
 Esta parte se documenta en detalle en los informes de `/docs` para el módulo de Sistemas Informáticos (SSII) y Entornos.
 
-***
 
 ## Estado y roadmap
 
@@ -182,8 +173,6 @@ Trabajo ya realizado o planificado:
 - [x] SPA Kanban completamente integrada con el backend (React + Tailwind + dnd-kit).
 - [ ] Dockerización y despliegue en Vercel (front) y Railway (backend + MySQL).
 - [ ] Documentación final completa en `/docs` para todos los módulos.
-
-***
 
 ## Autor y contexto académico
 
